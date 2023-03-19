@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../client/config.xsd">
+  <transports>
+    <transport type="sqlite" path="elter_20230319.db"/>
+  </transports>
+  <executable path="./gotm.exe"/>
+  <setup path="../"/>
+  <parameters>
+    <parameter file="gotm.yaml" variable="surface/fluxes/heat/scale_factor" minimum="0.8" maximum="1.2"/>
+    <parameter file="gotm.yaml" variable="surface/meteo/swr/scale_factor" minimum="0.8" maximum="1.2"/>
+    <parameter file="gotm.yaml" variable="surface/meteo/u10/scale_factor" minimum="0.8" maximum="1.2"/>
+    <parameter file="gotm.yaml" variable="turbulence/turb_param/k_min" minimum="1.4e-7" maximum="1e-5" logscale="True"/>
+    <parameter file="gotm.yaml" variable="light_extinction/g1/constant_value" minimum="0.45" maximum="0.5"/>
+    <parameter file="gotm.yaml" variable="light_extinction/g2/constant_value" minimum="0.5" maximum="2"/>
+    <parameter dummy="True"                                    minimum="0." maximum="1."/>
+  </parameters>
+  <observations>
+    <variable source="./elt_obs_wtr.dat" modelpath="output.nc" modelvariable="temp" spinupyears="0"/>
+  </observations>
+</config>
