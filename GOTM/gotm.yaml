@@ -6,8 +6,8 @@ location:
    depth: 6.5                          # water depth [m; min=0.0; default=100.0]
    hypsograph: hypsograph190206.dat           # hypsograph [default=]
 time:
-   start: 2012-01-01 00:00:00 # start date and time [yyyy-mm-dd HH:MM:SS; default=2017-01-01 00:00:00]
-   stop: 2019-12-31 23:00:00 # stop date and time [yyyy-mm-dd HH:MM:SS; default=2018-01-01 00:00:00]
+   start: 2017-01-01 00:00:00 # start date and time [yyyy-mm-dd HH:MM:SS; default=2017-01-01 00:00:00]
+   stop: 2017-12-31 23:00:00 # stop date and time [yyyy-mm-dd HH:MM:SS; default=2018-01-01 00:00:00]
    dt: 3600.0                           # time step for integration [s; min=0.0; default=3600.0]
 grid:
    nlev: 50                            # number of layers [min=1; default=100]
@@ -53,7 +53,7 @@ surface:
          constant_value: 0.0            # value to use throughout the simulation [W/m^2; default=0.0]
          file:                          # path to file with time series [default=]
          column: 1                      # index of column to read from [default=1]
-         scale_factor: 1.2 # scale factor to be applied to values read from file [default=1.0]
+         scale_factor: 0.8 # scale factor to be applied to values read from file [default=1.0]
       tx:                               # prescribed momentum flux in West-East direction
          method: 0                      # method [0=constant, 2=from file; default=0]
          constant_value: 0.0            # value to use throughout the simulation [Pa; default=0.0]
@@ -70,7 +70,7 @@ surface:
          constant_value: 0.0            # value to use throughout the simulation [m/s; default=0.0]
          file: met_data_elter_2012-2019.dat             # path to file with time series [default=]
          column: 1                      # index of column to read from [default=1]
-         scale_factor: 1.2 # scale factor to be applied to values read from file [default=1.0]
+         scale_factor: 1 # scale factor to be applied to values read from file [default=1.0]
       v10:                              # wind speed in South-North direction @ 10 m
          method: 2                      # method [0=constant, 2=from file; default=0]
          constant_value: 0.0            # value to use throughout the simulation [m/s; default=0.0]
@@ -86,7 +86,7 @@ surface:
       airt:                             # air temperature @ 2 m
          method: 2                      # method [0=constant, 2=from file; default=0]
          constant_value: 0.0            # value to use throughout the simulation [Celsius or K; default=0.0]
-         file: ./Input/AT_iterations/met_data_elter_1.dat # path to file with time series [default=]
+         file: met_data_elter_2012-2019.dat # path to file with time series [default=]
          column: 4                      # index of column to read from [default=1]
          scale_factor: 1.0              # scale factor to be applied to values read from file [default=1.0]
       hum:                              # humidity @ 2 m
@@ -107,7 +107,7 @@ surface:
          constant_value: 0.0            # value to use throughout the simulation [W/m^2; min=0.0; default=0.0]
          file: swr_data_elter (2012-2019).dat       # path to file with time series [default=]
          column: 1                      # index of column to read from [default=1]
-         scale_factor: 1.2 # scale factor to be applied to values read from file [default=1.0]
+         scale_factor: 0.8 # scale factor to be applied to values read from file [default=1.0]
       precip:                           # precipitation
          method: 0                      # method [0=constant, 2=from file; default=0]
          constant_value: 0.0            # value to use throughout the simulation [m/s; default=0.0]
@@ -147,7 +147,7 @@ light_extinction:
       column: 1                         # index of column to read from [default=1]
    g2:                                  # e-folding depth of visible shortwave radiation
       method: 0                         # method [0=constant, 2=from file; default=0]
-      constant_value: 0.7 # value to use throughout the simulation [m; min=0.0; default=8.0]
+      constant_value: 0.61 # value to use throughout the simulation [m; min=0.0; default=8.0]
       file:                             # path to file with time series [default=]
       column: 1                         # index of column to read from [default=1]
 turbulence:
@@ -167,7 +167,7 @@ turbulence:
       galp: 0.27                        # coefficient for length scale limitation [dimensionless; min=0.0; default=0.27]
       const_num: 5.00000000E-04         # constant eddy diffusivity [m^2/s; min=0.0; default=5.00000000E-04]
       const_nuh: 5.00000000E-04         # constant heat diffusivity [m^2/s; min=0.0; default=5.00000000E-04]
-      k_min: 1.4e-6 # minimum turbulent kinetic energy [m^2/s^2; min=0.0; default=1.00000000E-10]
+      k_min: 1.4e-7 # minimum turbulent kinetic energy [m^2/s^2; min=0.0; default=1.00000000E-10]
       eps_min: 1.00000000E-12           # minimum dissipation rate [m^2/s^3; min=0.0; default=1.00000000E-12]
       kb_min: 1.00000000E-10            # minimum buoyancy variance [m^2/s^4; min=0.0; default=1.00000000E-10]
       epsb_min: 1.00000000E-14          # minimum buoyancy variance destruction rate [m^2/s^5; min=0.0; default=1.00000000E-14]
@@ -281,28 +281,29 @@ o2:                                     # oxygen
    offset: 0.0                          # offset to be added to values read from file [default=0.0]
 streams:
    inflow:                                    # stream configuration
-      method: 4                                 # inflow method [default=1]
-      zu: 0.0                                   # upper limit [m; default=0.0]
-      zl: 6.0                                   # lower limit [m; default=0.0]
+      method: 4                                # inflow method [default=1 from surface, 2=from bottom, 3=depth interval, 4=density resolved]
+      zu: 3.0                                   # upper limit [m; default=0.0]
+      zl: 4.0                                   # lower limit [m; default=0.0]
       flow:                                     # water flow
          method: 2                              # method [0=constant, 2=from file; default=0]
-         constant_value: 0.0                    # value to use throughout the simulation [m^3/s; default=0.0]
-         file: ./Input/Q_iterations/Inflow_Q_0.5.dat # path to file with time series [default=]
+         constant_value: -1                    # value to use throughout the simulation [m^3/s; default=0.0]
+         file: Inflow_BACI.dat # path to file with time series [default=]
          column: 1 # index of column to read from [default=1]
+         scale_factor: 1.0
       temp:                                     # flow temperature
          method: 2                              # method [0=constant, 2=from file; default=0]
-         constant_value: -1.0                   # value to use throughout the simulation [Celcius; default=-1.0]
-         file: ./Input/AT_iterations/Inflow_T_1.dat # path to file with time series [default=]
-         column: 1 # index of column to read from [default=1]
+         constant_value: -1                     # value to use throughout the simulation [Celcius; default=-1.0]
+         file: Inflow_BACI.dat # path to file with time series [default=]
+         column: 2 # index of column to read from [default=1]
       salt:                                     # flow salinity
          method: 0                              # method [0=constant, 2=from file; default=0]
-         constant_value: -1.0                   # value to use throughout the simulation [PSU; default=-1.0]
+         constant_value: 0                   # value to use throughout the simulation [PSU; default=-1.0]
          file:                                  # path to file with time series [default=]
          column: 3                              # index of column to read from [default=1]
    outflow:                                     # stream configuration
       method: 1                                 # inflow method [default=1]
       zu: 0.0                                   # upper limit [m; default=0.0]
-      zl: 0.0                                   # lower limit [m; default=0.0]
+      zl: 1.0                                   # lower limit [m; default=0.0]
       flow:                                     # water flow
          method: 0                              # method [0=constant, 2=from file; default=0]
          constant_value: 0.0                    # value to use throughout the simulation [m^3/s; default=0.0]
@@ -342,11 +343,11 @@ eq_state:                               # equation of state
 restart:
    load: false                          # initialize simulation with state stored in restart.nc [default=false]
 output:
-   Output/Mod:                       # path of output file, excluding extension
-      format: text # format [text, netcdf; default=netcdf]
+   output:                       # path of output file, excluding extension
+      format: netcdf # format [text, netcdf; default=netcdf]
       time_unit: hour                    # time unit [second, hour, day, month, year, dt=model time step; default=day]
       time_step: 1                      # number of time units between output [min=1; default=1]
       time_method: mean                 # treatment of time dimension [point=instantaneous, mean, integrated; default=point]
-      #sync_interval: 0                  # number of output steps between sychronization to disk (<= 0: sync on close only) [default=1]
+      sync_interval: 0                  # number of output steps between sychronization to disk (<= 0: sync on close only) [default=1]
       variables:
-        - source: temp                     # variable name in model
+        - source: /*                  # variable name in model

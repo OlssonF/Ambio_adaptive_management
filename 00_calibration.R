@@ -1,4 +1,3 @@
-library("XML")
 library("rLakeAnalyzer")
 library("lubridate")
 library("plyr")
@@ -20,14 +19,10 @@ iterations <- expand.grid(l)
 colnames(iterations) <- c("shf", "swr", "wind")
 
 
-
-
-
-
 #============================================================
 #analysis of the output
 
-depths <- read.delim("./Obs_z.txt",
+depths <- read.delim("./output/Obs_z.txt",
                      skip = 9, header = F) #skip first nine lines
 z <- -depths[1, 2:51] #extract depths
 
@@ -35,7 +30,7 @@ z <- -depths[1, 2:51] #extract depths
 # Observed data======================================
 #read in observed data
 obs_temp <-
-  read.delim("./Obs_temp.txt",
+  read.delim("./Output/Obs_temp.txt",
              skip = 8,
              header = T)
 colnames(obs_temp) <-
@@ -142,30 +137,60 @@ colnames(nse) <- c(names)
 colnames(rmse) <- c(names)
 
 #==================================
+# make sure everything is set to baseline conditions
+LakeEnsemblR::input_yaml_multiple(file = gotm_config,
+                                  key1 = 'time', key2 = 'start', 
+                                  value = '2017-01-01 00:00:00')
+LakeEnsemblR::input_yaml_multiple(file = gotm_config,
+                                  key1 = 'time', key2 = 'stop', 
+                                  value = '2017-12-31 23:00:00')
 
+
+LakeEnsemblR::input_yaml_multiple(file = gotm_config,
+                                  key1 = 'surface', key2 = 'meteo',
+                                  key3 = 'airt', key4 = 'file',
+                                  value = 'met_data_elter_2012-2019.dat')
+
+
+LakeEnsemblR::input_yaml_multiple(file = gotm_config,
+                                  key1 = 'streams', key2 = 'inflow',
+                                  key3 = 'flow', key4 = 'file', 
+                                  value = 'inflow_BACI.dat')
+LakeEnsemblR::input_yaml_multiple(file = gotm_config,
+                                  key1 = 'streams', key2 = 'inflow',
+                                  key3 = 'temp', key4 = 'file', 
+                                  value = 'inflow_BACI.dat')
+LakeEnsemblR::input_yaml_multiple(file = gotm_config,
+                                  key1 = 'streams', key2 = 'inflow',
+                                  key3 = 'flow', key4 = 'column', 
+                                  value = '1')
+LakeEnsemblR::input_yaml_multiple(file = gotm_config,
+                                  key1 = 'streams', key2 = 'inflow',
+                                  key3 = 'temp', key4 = 'column', 
+                                  value = '2')
+
+# light attenuation
+g1 <- "0.48"
+g2 <- "0.61"
+k_min <- "1.4e-7"
+
+LakeEnsemblR::input_yaml_multiple(file = gotm_config,
+                                  key1 = 'light_extinction', key2 = 'g1', 
+                                  key3 = 'constant_value', 
+                                  value = g1)
+LakeEnsemblR::input_yaml_multiple(file = gotm_config,
+                                  key1 = 'light_extinction', key2 = 'g2', 
+                                  key3 = 'constant_value',
+                                  value = g2)
+LakeEnsemblR::input_yaml_multiple(file = gotm_config,
+                                  key1 = 'turbulence', key2 = 'turb_param', 
+                                  key3 = 'k_min',
+                                  value = k_min)
+#========================#
 for (i in 1:nrow(iterations)) {
   parameters_use <- iterations[i,]
   
   
-  # light attenuation
-  g1 <- "0.48"
-  g2 <- "0.7"
-  k_min <- "1.4e-6"
-  
-  LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                    key1 = 'light_extinction', key2 = 'g1', 
-                                    key3 = 'constant_value', 
-                                    value = g1)
-  LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                    key1 = 'light_extinction', key2 = 'g2', 
-                                    key3 = 'constant_value',
-                                    value = g2)
-  LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                    key1 = 'turbulence', key2 = 'turb_param', 
-                                    key3 = 'k_min',
-                                    value = k_min)
-  #========================#
- 
   # scaling factors
   LakeEnsemblR::input_yaml_multiple(file = gotm_config,
                                     key1 = 'surface', key2 = 'meteo', 
@@ -189,7 +214,7 @@ for (i in 1:nrow(iterations)) {
   # analysing the modelled output======================================
   #read in modelled data
   mod_temp <-
-    read.delim("Mod_temp.txt", skip = 8, header = T)
+    read.delim("./Output/Mod_temp.txt", skip = 8, header = T)
   colnames(mod_temp) <-
     c('datetime', paste0("wtr_", z))#wtr_1 is top of water, wtr_50 is bottom
   mod_temp <- mod_temp[, c(1, 51:2)] # reverse the order of the columns
@@ -302,39 +327,39 @@ for (i in 1:nrow(iterations)) {
     )
   
   
-  schmidt.fig <-
-    ggplot() +
-    geom_path(data = daily_av_mod, aes(x = date, y = schmidt, colour = "Model")) +
-    geom_path(data = daily_av_obs, aes(x = date, y = schmidt, colour = "Obs")) +
-    theme_classic() +
-    labs(x = "Date", y = "Schmidt stability", 
-         title = paste0("shf=", parameters_use[1], 
-                        ", swr=", parameters_use[2], 
-                        ", wind=", parameters_use[3])) +
-    geom_hline(yintercept = 0) + theme(legend.title = element_blank())
+  # schmidt.fig <-
+  #   ggplot() +
+  #   geom_path(data = daily_av_mod, aes(x = date, y = schmidt, colour = "Model")) +
+  #   geom_path(data = daily_av_obs, aes(x = date, y = schmidt, colour = "Obs")) +
+  #   theme_classic() +
+  #   labs(x = "Date", y = "Schmidt stability", 
+  #        title = paste0("shf=", parameters_use[1], 
+  #                       ", swr=", parameters_use[2], 
+  #                       ", wind=", parameters_use[3])) +
+  #   geom_hline(yintercept = 0) + theme(legend.title = element_blank())
+  # 
   
-  
-  av.temp.fig <-
-    ggplot() +
-    geom_path(data = daily_av_mod, aes(x = date, y = av.temp, colour = "Model")) +
-    geom_path(data = daily_av_obs, aes(x = date, y = av.temp, colour = "Obs")) +
-    theme_classic() + theme(legend.title = element_blank()) +
-    labs(x = "Date", y = "Volume average temperature", 
-         title = paste0("shf=", parameters_use[1], 
-                        ", swr=", parameters_use[2], 
-                        ", wind=", parameters_use[3]))
-  
+  # av.temp.fig <-
+  #   ggplot() +
+  #   geom_path(data = daily_av_mod, aes(x = date, y = av.temp, colour = "Model")) +
+  #   geom_path(data = daily_av_obs, aes(x = date, y = av.temp, colour = "Obs")) +
+  #   theme_classic() + theme(legend.title = element_blank()) +
+  #   labs(x = "Date", y = "Volume average temperature", 
+  #        title = paste0("shf=", parameters_use[1], 
+  #                       ", swr=", parameters_use[2], 
+  #                       ", wind=", parameters_use[3]))
+  # 
   ggsave(profiles, filename = paste0("./Plots/Inflow_method4/", "monthly_prof_shf=", parameters_use[1], 
                                      ",swr=", parameters_use[2], 
                                      ",wind=", parameters_use[3], ".png"), height = 4, width = 6)
   
-  ggsave(schmidt.fig, filename = paste0("./Plots/Inflow_method4/", "schmidt_shf=", parameters_use[1], 
-                                        ",swr=", parameters_use[2], 
-                                        ",wind=", parameters_use[3], ".png"), height = 4, width = 6)
-  
-  ggsave(av.temp.fig, filename = paste0("./Plots/Inflow_method4/ ", "avtemp_shf=", parameters_use[1], 
-                                        ",swr=", parameters_use[2], 
-                                        ",wind=", parameters_use[3], ".png"), height = 4, width = 6)
+  # ggsave(schmidt.fig, filename = paste0("./Plots/Inflow_method4/", "schmidt_shf=", parameters_use[1], 
+  #                                       ",swr=", parameters_use[2], 
+  #                                       ",wind=", parameters_use[3], ".png"), height = 4, width = 6)
+  # 
+  # ggsave(av.temp.fig, filename = paste0("./Plots/Inflow_method4/ ", "avtemp_shf=", parameters_use[1], 
+  #                                       ",swr=", parameters_use[2], 
+  #                                       ",wind=", parameters_use[3], ".png"), height = 4, width = 6)
   
   
   nse[i,] <- hydroGOF::NSE(sim = mod_temp[,2:54], obs = obs_temp[,2:54])
