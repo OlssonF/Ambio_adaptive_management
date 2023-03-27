@@ -147,7 +147,7 @@ strat.dates <- function(temp_diff, dens_diff, dates) {
              # top warmer than bottom
              dens_diff > 0.1)
   
-  # make ainto a df
+  # make into a df
   strat_length <- data.frame(strat = r$values,
                              lengths = r$lengths) %>%
     # Get the end of each run
@@ -155,15 +155,21 @@ strat.dates <- function(temp_diff, dens_diff, dates) {
            # Get the start of each run
            start = end - lengths + 1)
   
-  # Sort rows by whehter it is stratified or not
-  strat_length <- strat_length[order(strat_length$strat), ]
-  
   #define the start row
-  start.row <- strat_length$start[which(strat_length$length == max(strat_length$lengths)
-                                        & strat_length$strat == TRUE)] #gets the row with the start date
+  start.row <- strat_length |> 
+    filter(strat == T) |>  
+    slice_max(lengths) |> 
+    select(start) |> 
+    pull()
+  #gets the row with the start date
+  
   #of the run which has the max length and is TRuE
-  end.row <- strat_length$end[which(strat_length$length == max(strat_length$lengths)
-                                    & strat_length$strat == TRUE)] #gets the row with the end date
+  end.row <- strat_length |> 
+    filter(strat == T) |>  
+    slice_max(lengths) |> 
+    select(end) |> 
+    pull()#gets the row with the end date
+  
   #of the run which has the max length and is TRuE
   strat_dates <- data.frame(start = dates[start.row],
                             end = dates[end.row])
