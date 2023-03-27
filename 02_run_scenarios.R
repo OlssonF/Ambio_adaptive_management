@@ -1,6 +1,6 @@
 library(tidyverse)
 
-gotm_config <- 'gotm_elter.yaml'
+gotm_config <- 'gotm.yaml'
 
 #set the working  directory to the run folder
 dir <- here::here()
@@ -16,7 +16,10 @@ LakeEnsemblR::input_yaml_multiple(file = gotm_config,
                                   key1 = 'time', key2 = 'stop', 
                                   value = '2019-12-31 23:00:00')
 
-
+# no initial conditions so need to change the temperature method
+LakeEnsemblR::input_yaml_multiple(file = gotm_config,
+                                  key1 = 'temperature', key2 = 'method', 
+                                  value = 1)
 #======= Experiment 1: air temperature changes===========
 # only want to output the modelled data
 LakeEnsemblR::input_yaml_multiple(file = gotm_config,
@@ -258,7 +261,7 @@ for (i in 1:nrow(all_combinations)) {
 }
 #==================================#
 
-#======== Experiment 1e; airT + inflowT + inflowQ changes ========
+#======== Experiment 5; airT + inflowT + inflowQ changes ========
 # get all the combinations of airT (and inflowT) and inflowQ changes
 Q_vals <- gsub(".dat", "", 
                gsub("Inflow_Q_", "", 
