@@ -16,7 +16,7 @@ abs.change <-  function(old, new) {
 
 # vectorized version of percentage change function
 perc.change.v <- function(scenario_row, base_df, t) {
-  old <- base_df[which(base_df[,t] == scenario_row[,t]), # matches the timestep
+  old <- base_df[which(base_df[,t] == pull(scenario_row[,t])), # matches the timestep
                  c("bottomT",
                    "density_diff",
                    #"md_1",
@@ -37,7 +37,7 @@ perc.change.v <- function(scenario_row, base_df, t) {
 }
 
 abs.change.v <- function(scenario_row, base_df, t) {
-  old <- base_df[which(base_df[,t] == scenario_row[,t]),
+  old <- base_df[which(base_df[,t] == pull(scenario_row[,t])),
                  c("bottomT",
                    "density_diff",
                    #"md_1",
@@ -97,6 +97,16 @@ as.season <- function(date) {
                    levels = 1:4,
                    labels = c("winter", "spring", "summer", "autumn"))
   return(season)
+}
+
+# extract the season and from date
+as.seasonyear <- function(date) {
+  yq <- zoo::as.yearqtr(zoo::as.yearmon(date, "%m/%d/%Y") + 1/12)
+  season <- factor(format(yq, "%q"),
+                   levels = 1:4,
+                   labels = c("winter", "spring", "summer", "autumn"))
+  season_year <- paste(season, year(yq))
+  return(season_year)
 }
 
 # extract the season from date, but uses the meteorological year
