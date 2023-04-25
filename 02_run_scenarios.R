@@ -88,6 +88,9 @@ LakeEnsemblR::input_yaml_multiple(file = gotm_config,
                                   key3 = 'flow', key4 = 'column', 
                                   value = inflow_col)
 
+# vector of years to loop through
+years <- seq(2012, 2019, 1)
+
 for (i in 1:nrow(all_combinations)) {
   
   
@@ -111,16 +114,31 @@ for (i in 1:nrow(all_combinations)) {
                                     key1 = 'streams', key2 = 'inflow', 
                                     key3 = 'flow', key4 = 'file', 
                                     value = Q_iteration)
+  # want to loop through each year
+  for (j in 1:length(years)) {
+    year <- years[j]
+    start <- paste0(year, '-01-01 00:00:00')
+    stop <- paste0(year, '-12-31 00:00:00')
+    # change in configuration yaml
+    LakeEnsemblR::input_yaml_multiple(file = gotm_config,
+                                      key1 = 'time', key2 = 'start', 
+                                      value = start)
+    
+    LakeEnsemblR::input_yaml_multiple(file = gotm_config,
+                                      key1 = 'time', key2 = 'stop', 
+                                      value = stop)
+    
+    GOTMr::run_gotm(yaml_file = gotm_config)
+    
+    #copy the modelled output file proced by this model and rename
+    file.copy(from = "./Output/Mod_temp.txt",
+              to = file.path("./Output/Experiment_output/change_Q_AT_ST", year, paste0("Mod_temp_",
+                                                                                        "T_", all_combinations$t[i],
+                                                                                        "_Q_", all_combinations$inflowQ[i], 
+                                                                                        ".txt")),
+              overwrite = T)
+  }
   
-  GOTMr::run_gotm(yaml_file = gotm_config)
-  
-  #copy the modelled output file proced by this model and rename
-  file.copy(from = "./Output/Mod_temp.txt",
-            to = paste0("./Output/Experiment_output/change_Q_AT_ST/Mod_temp_",
-                        "T_", all_combinations$t[i],
-                        "_Q_", all_combinations$inflowQ[i], 
-                        ".txt"),
-            overwrite = T)
   
   
   print(i)
