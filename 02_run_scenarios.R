@@ -62,7 +62,7 @@ LakeEnsemblR::input_yaml_multiple(file = gotm_config,
                                   value = wind)
 
 
-#======== Experiment 5; airT + inflowT + inflowQ changes ========
+#======== Experiment 1; airT + inflowT + inflowQ changes ========
 # get all the combinations of airT (and inflowT) and inflowQ changes
 Q_vals <- gsub(".dat", "", 
                gsub("Inflow_Q_", "", 
@@ -118,7 +118,7 @@ for (i in 1:nrow(all_combinations)) {
   for (j in 1:length(years)) {
     year <- years[j]
     start <- paste0(year, '-01-01 00:00:00')
-    stop <- paste0(year, '-12-31 00:00:00')
+    stop <- paste0(year, '-12-31 23:00:00')
     # change in configuration yaml
     LakeEnsemblR::input_yaml_multiple(file = gotm_config,
                                       key1 = 'time', key2 = 'start', 
@@ -147,7 +147,7 @@ for (i in 1:nrow(all_combinations)) {
 }
 #==================================#
 
-#======== Experiment 4; airT + inflowQ changes ========
+#======== Experiment 2; airT + inflowQ changes ========
 
 # get all the combinations of airT (and inflowT) and inflowQ changes
 Q_vals <- gsub(".dat", "", 
@@ -228,179 +228,3 @@ for (i in 1:nrow(all_combinations)) {
   flush.console()
 }
 #==================================#
-
-#======= Experiment 1: air temperature changes===========
-# only want to output the modelled data
-LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                  key1 = 'output', key2 = 'output/Mod', 
-                                  key3 = 'format', 
-                                  value = 'text')
-
-#make sure the the inflow is set at the baseline values
-LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                  key1 = 'streams', key2 = 'inflow', 
-                                  key3 = 'flow', key4 = 'file', 
-                                  value = 'Inflow_BACI.dat')
-
-# also change the temperature of inflow to baseline
-LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                  key1 = 'streams', key2 = 'inflow', 
-                                  key3 = 'temp', key4 = 'file', 
-                                  value = 'Inflow_BACI.dat')
-
-# ensure the column for inflow Q and T are set correctly
-LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                  key1 = 'streams', key2 = 'inflow', 
-                                  key3 = 'flow', key4 = 'column', 
-                                  value = '1')
-LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                  key1 = 'streams', key2 = 'inflow', 
-                                  key3 = 'temp', key4 = 'column', 
-                                  value = '2', )
-
-
-# make a list of the inflow iteration files
-AT_files <- list.files(path = "Input/AT_iterations", pattern = "met_data_elter") 
-#make a list of simplified names which can be used when naming files
-AT_names <- gsub(".dat", "", gsub("met_data_elter_", "", AT_files))
-
-
-
-for (i in 1:length(AT_files)) {
-  
-  LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                    key1 = 'surface', key2 = 'meteo', 
-                                    key3 = 'airt', key4 = 'file', 
-                                    value = file.path('Input/AT_iterations', AT_files[i]))
-  
-  GOTMr::run_gotm(yaml_file = gotm_config)
-  
-  #copy the modelled output file proced by this model and rename
-  file.copy(from = "./Output/Mod_temp.txt",
-            to = paste0("./Output/Experiment_output/change_AT/Mod_temp_T_",
-                        AT_names[i],
-                        ".txt"),
-            overwrite = T)
-  
-  
-  print(i)
-  Sys.sleep(0.01)
-  flush.console()
-}
-
-#=====================================#
-
-#======= Experiment 2: airT + inflowT changes===========
-LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                  key1 = 'output', key2 = 'output/Mod', 
-                                  key3 = 'format', 
-                                  value = 'text')
-
-#make sure the the inflow is set at the baseline values
-LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                  key1 = 'streams', key2 = 'inflow', 
-                                  key3 = 'flow', key4 = 'file', 
-                                  value = 'inflow_BACI.dat')
-
-
-#make sure the the inflow  columns will change for this run
-LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                  key1 = 'streams', key2 = 'inflow', 
-                                  key3 = 'flow', key4 = 'column', 
-                                  value = '1')
-LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                  key1 = 'streams', key2 = 'inflow', 
-                                  key3 = 'temp', key4 = 'column', 
-                                  value = '1')
-
-# make a list of the temperature iteration files
-# for inflow and air
-T_files <- list.files(path = "Input/AT_iterations", pattern = "met_data_elter") 
-#make a list of simplified names which can be used when naming files
-T_names <- gsub(".dat", "", gsub("met_data_elter_", "", T_files))
-
-for (i in 1:length(T_names)) {
-  
-  # meteo file
-  LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                    key1 = 'surface', key2 = 'meteo', 
-                                    key3 = 'airt', key4 = 'file', 
-                                    value = file.path('Input/AT_iterations', T_files[i]))#change the file specified in the .xml file
-  
-  # inflowT file
-  inflowT_iteration <- paste0("./Input/AT_iterations/Inflow_T_",T_names[i], ".dat")
-  LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                    key1 = 'streams', key2 = 'inflow', 
-                                    key3 = 'temp', key4 = 'file', 
-                                    value = inflowT_iteration)
-  
-  GOTMr::run_gotm(yaml_file = gotm_config)
-  
-  #copy the modelled output file proced by this model and rename
-  file.copy(from = "./Output/Mod_temp.txt",
-            to = paste0("./Output/Experiment_output/change_AT_ST/Mod_temp_T_",
-                        T_names[i],
-                        ".txt"),
-            overwrite = T)
-  
-  
-  print(i)
-  Sys.sleep(0.01)
-  flush.console()
-}
-
-#=====================================#
-
-#======== Experiment 3; inflowQ changes ========
-#make sure the the met data is set at the baseline values
-meteo_file <- "met_data_elter_2012-2019.dat"
-LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                  key1 = 'surface', key2 = 'meteo', 
-                                  key3 = 'airt', key4 = 'file', 
-                                  value = meteo_file) 
-
-
-
-#make sure the the inflowT is set at the baseline values
-inflowT <- "Inflow_BACI.dat"
-LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                  key1 = 'streams', key2 = 'inflow', 
-                                  key3 = 'temp', key4 = 'file', 
-                                  value = inflowT)
-
-
-T_col <- 2
-LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                  key1 = 'streams', key2 = 'inflow', 
-                                  key3 = 'temp', key4 = 'column', 
-                                  value = T_col)
-
-
-# make a list of the inflow iteration files
-Q_files <- list.files(path = "./Input/Q_iterations", pattern = ".dat") 
-#make a list of simplified names which can be used when naming files
-Q_names <- gsub(".dat", "", gsub("Inflow_", "", Q_files))
-
-for (i in 1:length(Q_files)) {
-  # loop through each iteration
-  LakeEnsemblR::input_yaml_multiple(file = gotm_config,
-                                    key1 = 'streams', key2 = 'inflow', 
-                                    key3 = 'flow', key4 = 'file', 
-                                    value = file.path('Input/Q_iterations',Q_files[i]))
-  
-  GOTMr::run_gotm(yaml_file = gotm_config)
-  
-  #copy the modelled output file proced by this model and rename
-  file.copy(from = "./Output/Mod_temp.txt",
-            to = paste0("./Output/Experiment_output/change_Q/Mod_temp_",
-                        Q_names[i],
-                        ".txt"),
-            overwrite = T)
-  
-  
-  print(i)
-  Sys.sleep(0.01)
-  flush.console()
-}
-#========================================#
-
