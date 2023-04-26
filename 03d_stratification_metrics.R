@@ -12,7 +12,7 @@ source("R/helper_functions.R")
 source("r/modified_rLA.R")
 
 # column heading, date and depths
-z <- as.numeric(read.table("GOTM/Output/Mod_z.txt", 
+z <- as.numeric(read.table("GOTM/Output/Obs_z.txt", 
                            nrows = 1, # the rows are all repeats
                            skip =9, 
                            header = F, 
@@ -29,11 +29,19 @@ for (i in 1:nrow(all_combinations)) {
   # read in the hourly water temperatures
   name_use <- paste0("T_",all_combinations$t[i], "_Q_", all_combinations$inflowQ[i])
   
-  df.tmp <- readr::read_delim(paste0("GOTM/Output/Experiment_output/",
-                                     experiment, "/Mod_temp_", name_use, ".txt"), 
-                              delim = "\t", skip = 9, show_col_types = F,
-                              col_names = c("datetime", paste0("wtr_",z))) %>% #assign column names
+  df.tmp <- list.files(path = file.path(out_loc, experiment),
+                     pattern = paste0("Mod_temp_", name_use, ".txt"),
+                     recursive = T, full.names = T)[1:8] |>  
+    lapply(read.table, sep = "\t", skip = 9, header = F, 
+           col.names = c("datetime", paste0("wtr_",z))) |> 
+    bind_rows()%>% #assign column names
     mutate(datetime = ymd_hms(datetime))
+  
+  # df.tmp <- readr::read_delim(paste0("GOTM/Output/Experiment_output/",
+  #                                    experiment, "/Mod_temp_", name_use, ".txt"), 
+  #                             delim = "\t", skip = 9, show_col_types = F,
+  #                             col_names = c("datetime", paste0("wtr_",z))) %>% #assign column names
+  #   mutate(datetime = ymd_hms(datetime))
   
   
   #===water density===
