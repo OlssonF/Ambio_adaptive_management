@@ -249,8 +249,75 @@ ggarrange(airT_equiv_summer_BWT, airT_equiv_winter_BWT, labels = c("A) summer", 
 #==========================# +
 
 
-#=========================#
-                         
+# VAT =====
+# Volume-average temperature w/ AT
+VAT_AT <- abs_change %>%
+  # only want to look at Q_change effects
+  filter(Q_change == 1) %>%
+  ggplot(., aes(x=T_change, y=vol_av_temp_mean)) +
+  geom_ribbon(aes(ymax = vol_av_temp_mean + vol_av_temp_sd,
+                  ymin = vol_av_temp_mean - vol_av_temp_sd),colour = NA, alpha =0.3) +
+  geom_line() +
+  geom_point(size =0.9) +
+  facet_wrap(~season) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Change in volume average temperature (°C)")       
+
+# VAT w/ Q
+VAT_Q <- abs_change %>%
+  # only want to look at Q_change effects
+  filter(T_change == 0) %>%
+  ggplot(., aes(x=Q_change, y=vol_av_temp_mean)) +
+  geom_ribbon(aes(ymax = vol_av_temp_mean + vol_av_temp_sd,
+                  ymin = vol_av_temp_mean - vol_av_temp_sd),colour = NA, alpha =0.3) +
+  geom_line() +
+  geom_point(size =0.9) +
+  facet_wrap(~season) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) +
+  scale_x_continuous(breaks = c(0.3, 0.5, 0.7, 0.9, 1.1,1.3, 1.5, 1.7),
+                     labels = c(-70, -50, -30, -10, 10, 30, 50, 70)) +
+  labs(x = "Flow change (%)",
+       y= "Change in volume average temperature (°C)")        
+
+
+facet_labs <- c(spring = 'A) spring',
+                summer = 'B) summer',
+                autumn = 'C) autumn',
+                winter = 'D) winter')
+
+VAT_AT_Q <- abs_change %>%
+  ggplot(., aes(x=as.factor(Q_change), as.factor(T_change))) +
+  geom_tile(aes(fill = vol_av_temp_mean), colour ="black") +
+  geom_text(aes(label = round(vol_av_temp_mean, 1))) +
+  scale_fill_gradient2(limits = c(-0.8,4.5), low = "blue", high ="indianred",
+                       name = "Change in volume average temperature (°C)") +
+  theme_minimal() +
+  facet_wrap(~season, labeller = labeller(season = facet_labs)) +
+  theme(legend.position = "top",
+        legend.margin = margin(-0.1,0,-0.4,0, unit = "cm"),
+        strip.text = element_text(size = 12)) +
+  scale_x_discrete(breaks = as.factor(unique(abs_change$Q_change)),
+                   labels = as.factor(unique(abs_change$Q_change_percentage))) +
+  labs(x= "Flow change (%)",
+       y= "Air temperature change (+ °C)")
+
+# top row of plot (individual driver)
+VAT_ind <- plot_grid(VAT_AT, VAT_Q, nrow = 1, align = "vh", labels = c("A","B")) %>%
+  ggsave(path = file.path(out_dir, experiment, "Plots"),
+         filename = "VAT_change_individual.png",
+         width= 20, height = 9, units = "cm")
+
+
+# Q and AT combined as seperate plo
+ggsave(VAT_AT_Q, path = file.path(out_dir, experiment, "Plots"),
+       filename = "VAT_change_combined.png",
+       width= 20, height = 14, units = "cm")
+
+# =========================================#
+
 # stability =====
 
 # stability w/ AT
