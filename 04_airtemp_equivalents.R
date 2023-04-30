@@ -12,33 +12,39 @@ abs_change_seasonal <- read_delim(file.path(out_dir, experiment, "Summaries", "a
          T_change = as.factor(T_change),
          season = factor(season, levels = c("winter", "spring", "summer", "autumn")))
 
+# ===== Summer SWT & BWT======
 # what air temperature change is equivelent to the effect of a x% reduction in summer
 
 # just get the surfaceT
-swt <- abs_change_seasonal %>%
-  select(season, T_change, Q_change, surfaceT) %>%
+abs_temps <- abs_change_seasonal %>%
+  select(season, T_change, Q_change, surfaceT, bottomT) %>%
   mutate(T_change = as.numeric(as.character(T_change)),
          Q_change = as.numeric(as.character(Q_change))) %>%
   arrange(T_change, Q_change)
 
-equiv_effect_SWT <- expand.grid(T_change = unique(swt$T_change),
+equiv_effect_summer_temps <- expand.grid(T_change = unique(abs_temps$T_change),
                             # only want the Q reductions (< 1), more Q will cause cooling
-                            Q_change = unique(swt$Q_change)[which(unique(swt$Q_change) < 1)]) %>%
-  mutate(equiv_effect = NA)
+                            Q_change = unique(abs_temps$Q_change)[which(unique(abs_temps$Q_change) < 1)]) %>%
+  mutate(equiv_BWT = NA,
+         equiv_SWT = NA)
 
-for (i in 1:length(unique(swt$T_change))) {
-  T_change <- unique(swt$T_change)[i]
+for (i in 1:length(unique(abs_temps$T_change))) {
+  T_change <- unique(abs_temps$T_change)[i]
   
-  for (j in 1:5) {
-    Q_change <- unique(swt$Q_change)[j]
-    # extract the effect of a x% Q reduction on smmer temperature
-    change_val1 <- swt$surfaceT[which(swt$Q_change == Q_change & # 
-                                        swt$T_change == T_change& 
-                                        swt$season == "summer")]
+  for (j in 1:5) { # only the ones less than 1
+    Q_change <- unique(abs_temps$Q_change)[j]
+    # extract the effect of a x% Q reduction on smmer temperatures
+    change_val1 <- abs_temps$surfaceT[which(abs_temps$Q_change == Q_change & 
+                                              abs_temps$T_change == T_change & 
+                                              abs_temps$season == "summer")]
+    
+    change_val2 <- abs_temps$bottomT[which(abs_temps$Q_change == Q_change & 
+                                              abs_temps$T_change == T_change & 
+                                              abs_temps$season == "summer")]
     
     # extract the values where there is no Q_change, isolate a temperature effect
     # create a vector that will be interpolated
-    x1 <- swt %>%
+    x1 <- abs_temps %>%
       filter(Q_change == 1, season == "summer") %>%
       # needs to be a numberic vector to be interpolated
       mutate(T_change = as.numeric(as.character(T_change))) %>%
@@ -46,9 +52,14 @@ for (i in 1:length(unique(swt$T_change))) {
     
     # approx function linearly interpolates
     # estimate the y value for which the x value is change_val (the change caused by 50% reduction)
-    equiv_effect_SWT$equiv_effect[which(equiv_effect_SWT$T_change == T_change &
-                                              equiv_effect_SWT$Q_change == Q_change)] <- approx(x = x1$surfaceT, y=x1$T_change, 
-                                           xout = change_val1)$y - T_change
+    equiv_effect_summer_temps$equiv_SWT[which(equiv_effect_summer_temps$T_change == T_change &
+                                                   equiv_effect_summer_temps$Q_change == Q_change)] <- approx(x = x1$surfaceT,
+                                                                                                y=x1$T_change, 
+                                                                                                xout = change_val1)$y - T_change
+    equiv_effect_summer_temps$equiv_BWT[which(equiv_effect_summer_temps$T_change == T_change &
+                                                   equiv_effect_summer_temps$Q_change == Q_change)] <- approx(x = x1$bottomT,
+                                                                                            y=x1$T_change, 
+                                                                                            xout = change_val2)$y - T_change
   }
   
   
@@ -57,36 +68,44 @@ for (i in 1:length(unique(swt$T_change))) {
 
 
 
-write_delim(equiv_effect_SWT, file.path(out_dir, experiment, "Summaries", "air_temp_equiv_summer_SWT.txt"),
+write_delim(equiv_effect_summer_temps, 
+            file.path(out_dir, experiment, "Summaries", "air_temp_equiv_summer.txt"),
             delim = "\t")
 
 #==================================#
 
-# just get the surfaceT
-swt <- abs_change_seasonal %>%
-  select(season, T_change, Q_change, surfaceT) %>%
+# === winter SWT & BWT =====
+# what air temperature change is equivelent to the effect of a x% reduction in summer
+
+abs_temps <- abs_change_seasonal %>%
+  select(season, T_change, Q_change, surfaceT, bottomT) %>%
   mutate(T_change = as.numeric(as.character(T_change)),
          Q_change = as.numeric(as.character(Q_change))) %>%
   arrange(T_change, Q_change)
 
-equiv_effect_SWT_winter <- expand.grid(T_change = unique(swt$T_change),
-                                # only want the Q reductions (< 1), more Q will cause cooling
-                                Q_change = unique(swt$Q_change)[which(unique(swt$Q_change) > 1)]) %>%
-  mutate(equiv_effect = NA)
+equiv_effect_winter_temps <- expand.grid(T_change = unique(abs_temps$T_change),
+                                         # only want the Q increase (> 1), less Q will cause cooling
+                                         Q_change = unique(abs_temps$Q_change)[which(unique(abs_temps$Q_change) > 1)]) %>%
+  mutate(equiv_BWT = NA,
+         equiv_SWT = NA)
 
-for (i in 1:length(unique(swt$T_change))) {
-  T_change <- unique(swt$T_change)[i]
+for (i in 1:length(unique(abs_temps$T_change))) {
+  T_change <- unique(abs_temps$T_change)[i]
   
-  for (j in 5:9) {
-    Q_change <- unique(swt$Q_change)[j]
-    # extract the effect of a x% Q reduction on smmer temperature
-    change_val1 <- swt$surfaceT[which(swt$Q_change == Q_change & # 
-                                        swt$T_change == T_change& 
-                                        swt$season == "winter")]
+  for (j in 5:9) { # only the ones more than 1
+    Q_change <- unique(abs_temps$Q_change)[j]
+    # extract the effect of a x% Q reduction on smmer temperatures
+    change_val1 <- abs_temps$surfaceT[which(abs_temps$Q_change == Q_change & 
+                                              abs_temps$T_change == T_change & 
+                                              abs_temps$season == "winter")]
+    
+    change_val2 <- abs_temps$bottomT[which(abs_temps$Q_change == Q_change & 
+                                             abs_temps$T_change == T_change & 
+                                             abs_temps$season == "winter")]
     
     # extract the values where there is no Q_change, isolate a temperature effect
     # create a vector that will be interpolated
-    x1 <- swt %>%
+    x1 <- abs_temps %>%
       filter(Q_change == 1, season == "winter") %>%
       # needs to be a numberic vector to be interpolated
       mutate(T_change = as.numeric(as.character(T_change))) %>%
@@ -94,9 +113,14 @@ for (i in 1:length(unique(swt$T_change))) {
     
     # approx function linearly interpolates
     # estimate the y value for which the x value is change_val (the change caused by 50% reduction)
-    equiv_effect_SWT_winter$equiv_effect[which(equiv_effect_SWT_winter$T_change == T_change &
-                                          equiv_effect_SWT_winter$Q_change == Q_change)] <- approx(x = x1$surfaceT, y=x1$T_change, 
-                                                                                            xout = change_val1)$y - T_change
+    equiv_effect_winter_temps$equiv_SWT[which(equiv_effect_winter_temps$T_change == T_change &
+                                                equiv_effect_winter_temps$Q_change == Q_change)] <- approx(x = x1$surfaceT,
+                                                                                                           y=x1$T_change, 
+                                                                                                           xout = change_val1)$y - T_change
+    equiv_effect_winter_temps$equiv_BWT[which(equiv_effect_winter_temps$T_change == T_change &
+                                                equiv_effect_winter_temps$Q_change == Q_change)] <- approx(x = x1$bottomT,
+                                                                                                           y=x1$T_change, 
+                                                                                                           xout = change_val2)$y - T_change
   }
   
   
@@ -104,12 +128,12 @@ for (i in 1:length(unique(swt$T_change))) {
 }
 
 
-
-write_delim(equiv_effect_SWT_winter, file.path(out_dir, experiment, "Summaries", "air_temp_equiv_winter_SWT.txt"),
+write_delim(equiv_effect_winter_temps, file.path(out_dir, experiment, "Summaries", "air_temp_equiv_winter.txt"),
             delim = "\t")
 
 #==================================#
 
+# === summer schmidt stability ====
 perc_change_seasonal <- read_delim(file.path(out_dir, experiment, "Summaries", "percent_change_seasonal.txt") ,
                                    show_col_types = F) |> 
   mutate(Q_change = as.factor(Q_change),
