@@ -25,17 +25,19 @@ strat_change <- read_delim(file.path(out_dir,experiment, "Summaries","Strat_summ
                            show_col_types = F) %>%
   mutate(Q_change_percentage = (Q_change - 1) * 100)
 
-airT_equiv_summer_SWT <- read_delim(file.path(out_dir,experiment, "Summaries", 
-                                              "air_temp_equiv_summer_SWT.txt"),
+
+airT_equiv_summer <- read_delim(file.path(out_dir,experiment, "Summaries", 
+                                              "air_temp_equiv_summer.txt"),
                                     show_col_types = F) %>%
   mutate(Q_reduction = abs((Q_change - 1)) * 100)
 airT_equiv_summer_stability <- read_delim(file.path(out_dir,experiment, "Summaries",
                                                     "air_temp_equiv_summer_stability.txt"),
                                           show_col_types = F) %>%
   mutate(Q_reduction = abs((Q_change - 1)) * 100)
-airT_equiv_winter_SWT <- read_delim(file.path(out_dir,experiment, "Summaries", "air_temp_equiv_winter_SWT.txt"),
+airT_equiv_winter <- read_delim(file.path(out_dir,experiment, "Summaries", "air_temp_equiv_winter.txt"),
                                     show_col_types = F) %>%
   mutate(Q_increase = abs((Q_change - 1)) * 100)
+
 
 strat_indices <- read_delim(file.path(out_dir,experiment, "Summaries", "Strat_summary_annual.txt"),
                             show_col_types = F)%>%
@@ -112,40 +114,42 @@ ggsave(SWT_AT_Q, path = file.path(out_dir, experiment, "Plots"),
        width= 20, height = 14, units = "cm")
 
 # air temperature equivalent changes
-airT_equiv_summer <- ggplot(airT_equiv_summer_SWT, aes(x=T_change, y= equiv_effect, colour = as.factor(Q_reduction))) +
+airT_equiv_summer_SWT <- ggplot(airT_equiv_summer, aes(x=T_change, y= equiv_SWT, colour = as.factor(Q_reduction))) +
   geom_point() +
   theme_bw() +
   theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
-  scale_y_continuous(limit = c(0,1.2), 
-                     breaks = seq(0,1.2,0.2)) +
+  scale_y_continuous(limit = c(0,1.5), 
+                     breaks = seq(0,1.4,0.2)) +
   scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
                          guide = guide_legend(direction = "horizontal",
                                               title.position = "top"))  +
-  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0)) +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0), 
+        panel.grid.minor = element_blank()) +
   labs(x = "Air temperature change (+ °C)",
        y= "Air temperature equivalent (°C)") 
 
-airT_equiv_winter <- ggplot(airT_equiv_winter_SWT, 
-                            aes(x=T_change, y= equiv_effect, colour = as.factor(Q_increase))) +
+airT_equiv_winter_SWT <- ggplot(airT_equiv_winter, 
+                            aes(x=T_change, y= equiv_SWT, colour = as.factor(Q_increase))) +
   geom_point() +
   theme_bw() +
   theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
-  scale_y_continuous(limit = c(0,1.2), 
-                     breaks = seq(0,1.2,0.2)) +
+  scale_y_continuous(limit = c(0,1.5), 
+                     breaks = seq(0,1.4,0.2)) +
   scale_colour_viridis_d(name = "Flow increase (%)", begin = 0.1, end = 0.9,
                          guide = guide_legend(direction = "horizontal",
                                               title.position = "top"))  +
-  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0)) +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0),
+        panel.grid.minor = element_blank()) +
   labs(x = "Air temperature change (+ °C)",
        y= "Air temperature equivalent (°C)") 
 
 
-ggarrange(airT_equiv_summer, airT_equiv_winter, labels = c("A) summer", "B) winter"),
+ggarrange(airT_equiv_summer_SWT, airT_equiv_winter_SWT, labels = c("A) summer", "B) winter"),
           hjust = -0.1) %>%
   ggsave(path = file.path(out_dir, experiment, "Plots"),
          filename = "SWT_airT_equiv.png",
          width= 20, height = 10.5, units = "cm")
-  #==========================# +
+  #==========================# 
 
 # bottom water temperature =====
 # BWT w/ AT
@@ -204,6 +208,46 @@ plot_grid(BWT_ind, BWT_AT_Q, nrow =2, rel_heights = c(1,1.5), align = "v", axis 
   ggsave(path = file.path(out_dir, experiment, "Plots"),
          filename = "BWT_change.png",
          width= 20, height = 20, units = "cm")
+
+
+# air temperature equivalent changes
+airT_equiv_summer_BWT <- ggplot(airT_equiv_summer, aes(x=T_change, y= equiv_BWT, colour = as.factor(Q_reduction))) +
+  geom_point() +
+  theme_bw() +
+  theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
+  scale_y_continuous(limit = c(0,1.5), 
+                     breaks = seq(0,1.4,0.2)) +
+  scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
+                         guide = guide_legend(direction = "horizontal",
+                                              title.position = "top"))  +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Air temperature equivalent (°C)") 
+
+airT_equiv_winter_BWT <- ggplot(airT_equiv_winter, 
+                                aes(x=T_change, y= equiv_BWT, colour = as.factor(Q_increase))) +
+  geom_point() +
+  theme_bw() +
+  theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
+  scale_y_continuous(limit = c(-0.5,0.5), 
+                     breaks = seq(-0.4, 0.4,0.2)) +
+  scale_colour_viridis_d(name = "Flow increase (%)", begin = 0.1, end = 0.9,
+                         guide = guide_legend(direction = "horizontal",
+                                              title.position = "top"))  +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0),
+        panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Air temperature equivalent (°C)") 
+
+
+ggarrange(airT_equiv_summer_BWT, airT_equiv_winter_BWT, labels = c("A) summer", "B) winter"),
+          hjust = -0.1) %>%
+  ggsave(path = file.path(out_dir, experiment, "Plots"),
+         filename = "BWT_airT_equiv.png",
+         width= 20, height = 10.5, units = "cm")
+#==========================# +
+
 
 #=========================#
                          
@@ -633,14 +677,14 @@ ggarrange(change_dates_ind, change_dates_AT_Q, nrow = 2) %>%
 
 # lake inflow temperature difference
 # get estimate inflow temp and surface temps - find the average difference
-inflows <- read.delim("C:\\Users\\freya\\Documents\\GOTM\\elterwater\\elterwater run\\Inflow_BACI.dat") %>%
+inflows <- read.delim("GOTM/Inflow_BACI.dat") %>%
   mutate(X.DateTime = ymd_hms(X.DateTime),
          jday = yday(format(X.DateTime, "%Y-%m-%d"))) %>%
   group_by(jday) %>%
   summarise(inflow_T = mean(inflow_T))
 
 
-surfaceT <- read.delim("./e - airT + inflowT + inflowQ/Mod_temp_T_0_Q_1.txt", header = F,
+surfaceT <- read.delim("GOTM/Output/Experiment_output/change_Q_AT/Mod_temp_T_0_Q_1.txt", header = F,
                        skip = 9)[,c(1,51)] %>%
   rename(X.DateTime = V1,
          surface_T = V51) %>%
