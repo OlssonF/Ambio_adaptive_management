@@ -356,6 +356,70 @@ ggarrange(plot_grid(stability_ind, stability_AT_Q, nrow =2,
          width= 20, height = 14, units = "cm")
 #==============================================#
 
+# densdiff =====
+
+# densdiff w/ AT
+densdiff_AT <- abs_change %>%
+  filter(season == "summer") %>%
+  # only want to look at Q_change effects
+  filter(Q_change == 1) %>%
+  ggplot(., aes(x=T_change, y=density_diff_mean)) +
+  geom_ribbon(aes(ymax = density_diff_mean + density_diff_sd,
+                  ymin = density_diff_mean - density_diff_sd),colour = NA, alpha =0.3) +
+  geom_line() +
+  geom_point(size =0.9) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature\nchange (+ °C)",
+       y= "Change in density difference")       
+
+# densdiff w/ Q
+densdiff_Q <- abs_change %>%
+  filter(season == "summer") %>%
+  # only want to look at Q_change effects
+  filter(T_change == 0)  %>%
+  ggplot(., aes(x=Q_change, y=density_diff_mean)) +
+  geom_ribbon(aes(ymax = density_diff_mean + density_diff_sd,
+                  ymin = density_diff_mean - density_diff_sd),colour = NA, alpha =0.3) +
+  geom_line() +
+  geom_point(size =0.9) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) +
+  scale_x_continuous(breaks = c(0.3, 0.5, 0.7, 0.9, 1.1,1.3, 1.5, 1.7),
+                     labels = c(-70, -50, -30, -10, 10, 30, 50, 70)) +
+  labs(x = "Flow change (%)",
+       y= "Change in density difference")        
+
+
+densdiff_AT_Q <- abs_change %>%
+  # filter(season == "summer") %>%
+  ggplot(., aes(x=as.factor(Q_change), as.factor(T_change))) +
+  geom_tile(aes(fill = density_diff_mean), colour ="black") +
+  geom_text(aes(label = round(density_diff_mean, 1)), size = 3) +
+  scale_fill_gradient2(limits = c(-0.2,0.6), low = "orchid4", high ="springgreen4",
+                       name = "Change in density difference") +
+  theme_minimal() +
+  facet_wrap(~season) +
+  theme(legend.position = "top",
+        legend.margin = margin(-0.1,0,-0.4,0, unit = "cm")) +
+  scale_x_discrete(breaks = as.factor(unique(abs_change$Q_change)),
+                   labels = as.factor(unique(abs_change$Q_change_percentage))) +
+  labs(x= "Flow change (%)",
+       y= "Air temperature change (°C)") 
+
+# top row of plot (individual driver)
+densdiff_ind <- plot_grid(densdiff_AT, densdiff_Q, nrow = 1, align = "vh", labels = c("A","B"), hjust =-2)
+# Q and AT combined added underneath
+plot_grid(densdiff_ind, densdiff_AT_Q, nrow =2,
+          rel_heights = c(0.7,1), 
+          align = "v", 
+          axis ="rb", 
+          labels = c(" ", "C")) %>%
+  ggsave(path = file.path(out_dir, experiment, "Plots"),
+         filename = "densdiff change.png",
+         width= 20, height = 20, units = "cm")
+
+#=============================#
 # summer stratified period ======
 strat_AT <- strat_change %>%
   filter(Q_change == 1) %>%
@@ -472,7 +536,7 @@ plot_grid(inverse_ind, inverse_AT_Q, nrow =2,
 
 #===============================================#
 
-# ====== strat dates ======
+# strat dates ======
 
 change_dates_AT <- 
   strat_change %>%
