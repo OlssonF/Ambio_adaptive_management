@@ -6,8 +6,8 @@ location:
    depth: 6.5                          # water depth [m; min=0.0; default=100.0]
    hypsograph: hypsograph190206.dat           # hypsograph [default=]
 time:
-   start: 2017-01-01 00:00:00 # start date and time [yyyy-mm-dd HH:MM:SS; default=2017-01-01 00:00:00]
-   stop: 2017-12-31 23:00:00 # stop date and time [yyyy-mm-dd HH:MM:SS; default=2018-01-01 00:00:00]
+   start: 2016-01-01 00:00:00 # start date and time [yyyy-mm-dd HH:MM:SS; default=2017-01-01 00:00:00]
+   stop: 2018-12-31 23:00:00 # stop date and time [yyyy-mm-dd HH:MM:SS; default=2018-01-01 00:00:00]
    dt: 3600.0                           # time step for integration [s; min=0.0; default=3600.0]
 grid:
    nlev: 50                            # number of layers [min=1; default=100]
@@ -16,8 +16,8 @@ grid:
    ddl: 0.0                             # bottom zooming [dimensionless; min=0.0; default=0.0]
    file:                                # file with custom grid [default=]
 temperature:                            # temperature profile used for initialization and optionally relaxation
-   method: 1                           # method [0=off, 1=analytical, 2=from file; default=0]
-   file:                                  # path to file with series of profiles [default=]
+   method: 1 # method [0=off, 1=analytical, 2=from file; default=0]
+   file: t_prof_file.dat                                 # path to file with series of profiles [default=]
    column: 1                            # index of column to read from [default=1]
    analytical:
       method: 1                         # type of analytical initial temperature profile [1=constant, 2=two layers, 3=from salinity and buoyancy frequency; default=1]
@@ -53,7 +53,7 @@ surface:
          constant_value: 0.0            # value to use throughout the simulation [W/m^2; default=0.0]
          file:                          # path to file with time series [default=]
          column: 1                      # index of column to read from [default=1]
-         scale_factor: 0.8 # scale factor to be applied to values read from file [default=1.0]
+         scale_factor: 1.0 # scale factor to be applied to values read from file [default=1.0]
       tx:                               # prescribed momentum flux in West-East direction
          method: 0                      # method [0=constant, 2=from file; default=0]
          constant_value: 0.0            # value to use throughout the simulation [Pa; default=0.0]
@@ -70,7 +70,7 @@ surface:
          constant_value: 0.0            # value to use throughout the simulation [m/s; default=0.0]
          file: met_data_elter_2012-2019.dat             # path to file with time series [default=]
          column: 1                      # index of column to read from [default=1]
-         scale_factor: 1 # scale factor to be applied to values read from file [default=1.0]
+         scale_factor: 1.0 # scale factor to be applied to values read from file [default=1.0]
       v10:                              # wind speed in South-North direction @ 10 m
          method: 2                      # method [0=constant, 2=from file; default=0]
          constant_value: 0.0            # value to use throughout the simulation [m/s; default=0.0]
@@ -107,7 +107,7 @@ surface:
          constant_value: 0.0            # value to use throughout the simulation [W/m^2; min=0.0; default=0.0]
          file: swr_data_elter (2012-2019).dat       # path to file with time series [default=]
          column: 1                      # index of column to read from [default=1]
-         scale_factor: 0.8 # scale factor to be applied to values read from file [default=1.0]
+         scale_factor: 1.0 # scale factor to be applied to values read from file [default=1.0]
       precip:                           # precipitation
          method: 0                      # method [0=constant, 2=from file; default=0]
          constant_value: 0.0            # value to use throughout the simulation [m/s; default=0.0]
@@ -142,12 +142,12 @@ light_extinction:
       column: 1                         # index of column to read from [default=1]
    g1:                                  # e-folding depth of non-visible shortwave radiation
       method: 0                         # method [0=constant, 2=from file; default=0]
-      constant_value: 0.48 # value to use throughout the simulation [m; min=0.0; default=0.4]
+      constant_value: 0.5 # value to use throughout the simulation [m; min=0.0; default=0.4]
       file:                             # path to file with time series [default=]
       column: 1                         # index of column to read from [default=1]
    g2:                                  # e-folding depth of visible shortwave radiation
       method: 0                         # method [0=constant, 2=from file; default=0]
-      constant_value: 0.61 # value to use throughout the simulation [m; min=0.0; default=8.0]
+      constant_value: 1.0 # value to use throughout the simulation [m; min=0.0; default=8.0]
       file:                             # path to file with time series [default=]
       column: 1                         # index of column to read from [default=1]
 turbulence:
@@ -167,7 +167,7 @@ turbulence:
       galp: 0.27                        # coefficient for length scale limitation [dimensionless; min=0.0; default=0.27]
       const_num: 5.00000000E-04         # constant eddy diffusivity [m^2/s; min=0.0; default=5.00000000E-04]
       const_nuh: 5.00000000E-04         # constant heat diffusivity [m^2/s; min=0.0; default=5.00000000E-04]
-      k_min: 1.4e-7 # minimum turbulent kinetic energy [m^2/s^2; min=0.0; default=1.00000000E-10]
+      k_min: 4.5e-7 # minimum turbulent kinetic energy [m^2/s^2; min=0.0; default=1.00000000E-10]
       eps_min: 1.00000000E-12           # minimum dissipation rate [m^2/s^3; min=0.0; default=1.00000000E-12]
       kb_min: 1.00000000E-10            # minimum buoyancy variance [m^2/s^4; min=0.0; default=1.00000000E-10]
       epsb_min: 1.00000000E-14          # minimum buoyancy variance destruction rate [m^2/s^5; min=0.0; default=1.00000000E-14]
@@ -348,6 +348,22 @@ output:
       time_unit: hour                    # time unit [second, hour, day, month, year, dt=model time step; default=day]
       time_step: 1                      # number of time units between output [min=1; default=1]
       time_method: mean                 # treatment of time dimension [point=instantaneous, mean, integrated; default=point]
-      sync_interval: 0                  # number of output steps between sychronization to disk (<= 0: sync on close only) [default=1]
+      #sync_interval: 0                  # number of output steps between sychronization to disk (<= 0: sync on close only) [default=1]
       variables:
-        - source: /*                  # variable name in model
+        - source: /*                  # variable name in modeloutput:
+#   output/Mod:                       # path of output file, excluding extension
+#      format: text # format [text, netcdf; default=netcdf]
+#      time_unit: hour                    # time unit [second, hour, day, month, year, dt=model time step; default=day]
+#      time_step: 1                      # number of time units between output [min=1; default=1]
+#      time_method: mean                 # treatment of time dimension [point=instantaneous, mean, integrated; default=point]
+#      #sync_interval: 0                  # number of output steps between sychronization to disk (<= 0: sync on close only) [default=1]
+#      variables:
+#        - source: temp                  # variable name in model
+#   output/Obs:                       # path of output file, excluding extension
+#      format: text # format [text, netcdf; default=netcdf]
+#      time_unit: hour                    # time unit [second, hour, day, month, year, dt=model time step; default=day]
+#      time_step: 1                      # number of time units between output [min=1; default=1]
+#      time_method: mean                 # treatment of time dimension [point=instantaneous, mean, integrated; default=point]
+#      #sync_interval: 0                  # number of output steps between sychronization to disk (<= 0: sync on close only) [default=1]
+#      variables:
+#        - source: temp_obs                  # variable name in model

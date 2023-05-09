@@ -3,13 +3,13 @@ library(tidyverse)
 
 
 # Script to run the parsac calibration via a batch file
-
+setwd(here::here())
 cal_location <- 'GOTM/parsac'
 setwd(cal_location)
 
 # write the batch files
-config_file <- 'config_elter_parsac.xml'
-runs <- 4000
+config_file <- 'config_elter_parsac_v2.xml'
+runs <- 2000
 bat_outfile <- 'parsac_config.bat'
 
 write(c(paste('parsac', 'calibration', 'run',
@@ -22,7 +22,7 @@ system(bat_outfile, minimized = F, invisible = F)
 
 
 # extract best values from db
-filename <- 'elter_20230319.db'
+filename <- 'elter_20230326.db'
 sqlite.driver <- dbDriver("SQLite")
 db <- dbConnect(sqlite.driver,
                 dbname = filename)
