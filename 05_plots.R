@@ -27,16 +27,16 @@ strat_change <- read_delim(file.path(out_dir,experiment, "Summaries","Strat_summ
 
 
 airT_equiv_summer <- read_delim(file.path(out_dir,experiment, "Summaries", 
-                                              "air_temp_equiv_summer.txt"),
+                                              "air_temp_equiv_summer_new_method.txt"),
                                     show_col_types = F) %>%
-  mutate(Q_reduction = abs((Q_change - 1)) * 100)
+  mutate(Q_reduction = abs((Q_change_val - 1)) * 100)
 airT_equiv_summer_stability <- read_delim(file.path(out_dir,experiment, "Summaries",
-                                                    "air_temp_equiv_summer_stability.txt"),
+                                                    "air_temp_equiv_summer_stability_new_method.txt"),
                                           show_col_types = F) %>%
   mutate(Q_reduction = abs((Q_change - 1)) * 100)
-airT_equiv_winter <- read_delim(file.path(out_dir,experiment, "Summaries", "air_temp_equiv_winter.txt"),
+airT_equiv_winter <- read_delim(file.path(out_dir,experiment, "Summaries", "air_temp_equiv_winter_new_method.txt"),
                                     show_col_types = F) %>%
-  mutate(Q_increase = abs((Q_change - 1)) * 100)
+  mutate(Q_increase = abs((Q_change_val - 1)) * 100)
 
 
 strat_indices <- read_delim(file.path(out_dir,experiment, "Summaries", "Strat_summary_annual.txt"),
@@ -114,12 +114,12 @@ ggsave(SWT_AT_Q, path = file.path(out_dir, experiment, "Plots"),
        width= 20, height = 14, units = "cm")
 
 # air temperature equivalent changes
-airT_equiv_summer_SWT <- ggplot(airT_equiv_summer, aes(x=T_change, y= equiv_SWT, colour = as.factor(Q_reduction))) +
+airT_equiv_summer_SWT <- ggplot(airT_equiv_summer, aes(x=T_change_val, y= equiv_SWT, colour = as.factor(Q_reduction))) +
   geom_point() +
   theme_bw() +
   theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
-  scale_y_continuous(limit = c(0,1.5), 
-                     breaks = seq(0,1.4,0.2)) +
+  scale_y_continuous(limit = c(0,2.0), 
+                     breaks = seq(0,2.0,0.2)) +
   scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
                          guide = guide_legend(direction = "horizontal",
                                               title.position = "top"))  +
@@ -129,12 +129,12 @@ airT_equiv_summer_SWT <- ggplot(airT_equiv_summer, aes(x=T_change, y= equiv_SWT,
        y= "Air temperature equivalent (°C)") 
 
 airT_equiv_winter_SWT <- ggplot(airT_equiv_winter, 
-                            aes(x=T_change, y= equiv_SWT, colour = as.factor(Q_increase))) +
+                            aes(x=T_change_val, y= equiv_SWT, colour = as.factor(Q_increase))) +
   geom_point() +
   theme_bw() +
   theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
-  scale_y_continuous(limit = c(0,1.5), 
-                     breaks = seq(0,1.4,0.2)) +
+  scale_y_continuous(limit = c(0,2.0), 
+                     breaks = seq(0,2.0,0.2)) +
   scale_colour_viridis_d(name = "Flow increase (%)", begin = 0.1, end = 0.9,
                          guide = guide_legend(direction = "horizontal",
                                               title.position = "top"))  +
@@ -211,7 +211,7 @@ plot_grid(BWT_ind, BWT_AT_Q, nrow =2, rel_heights = c(1,1.5), align = "v", axis 
 
 
 # air temperature equivalent changes
-airT_equiv_summer_BWT <- ggplot(airT_equiv_summer, aes(x=T_change, y= equiv_BWT, colour = as.factor(Q_reduction))) +
+airT_equiv_summer_BWT <- ggplot(airT_equiv_summer, aes(x=T_change_val, y= equiv_BWT, colour = as.factor(Q_reduction))) +
   geom_point() +
   theme_bw() +
   theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
@@ -226,7 +226,7 @@ airT_equiv_summer_BWT <- ggplot(airT_equiv_summer, aes(x=T_change, y= equiv_BWT,
        y= "Air temperature equivalent (°C)") 
 
 airT_equiv_winter_BWT <- ggplot(airT_equiv_winter, 
-                                aes(x=T_change, y= equiv_BWT, colour = as.factor(Q_increase))) +
+                                aes(x=T_change_val, y= equiv_BWT, colour = as.factor(Q_increase))) +
   geom_point() +
   theme_bw() +
   theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
@@ -390,18 +390,18 @@ airT_equiv_stability <- ggplot(airT_equiv_summer_stability,
   geom_point() +
   theme_bw() +
   theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
-  scale_y_continuous(limit = c(0,1.5), 
-                     breaks = seq(0,1.6,0.4)) +
+  scale_y_continuous(limit = c(0,2.0), 
+                     breaks = seq(0,2.0,0.2)) +
   scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
                          guide = guide_legend(direction = "horizontal",
                                               title.position = "top"))  +
-  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0)) +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0),
+        panel.grid.minor = element_blank()) +
   labs(x = "Air temperature change (+ °C)",
        y= "Air temperature equivalent (°C)") 
 
 
-
-ggarrange(airT_equiv_summer, airT_equiv_stability, airT_equiv_winter, 
+ggarrange(airT_equiv_summer_SWT, airT_equiv_stability, airT_equiv_winter_SWT, 
           labels = c("A) summer SWT", "B) summer stability", "C) winter SWT"),
           nrow = 1,
           hjust = -0.1) %>%
