@@ -390,8 +390,8 @@ airT_equiv_stability <- ggplot(airT_equiv_summer_stability,
   geom_point() +
   theme_bw() +
   theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
-  scale_y_continuous(limit = c(0,1.2), 
-                     breaks = seq(0,1.2,0.2)) +
+  scale_y_continuous(limit = c(0,1.5), 
+                     breaks = seq(0,1.6,0.4)) +
   scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
                          guide = guide_legend(direction = "horizontal",
                                               title.position = "top"))  +
@@ -667,7 +667,7 @@ change_end_AT_Q <- strat_change %>%
   ggplot(., aes(x=as.factor(Q_change), as.factor(T_change))) +
   geom_tile(aes(fill = end_mean), colour ="black") +
   geom_text(aes(label = round(end_mean, 1))) +
-  scale_fill_gradient2(limits = c(-50,20), low = "orchid4", high ="springgreen4",
+  scale_fill_gradient2(limits = c(-35,25), low = "orchid4", high ="springgreen4",
                        name = "Change in date (days)") +
   theme_minimal() +
   scale_x_discrete(breaks = as.factor(unique(abs_change$Q_change)),
@@ -683,7 +683,7 @@ change_start_AT_Q <-
   ggplot(., aes(x=as.factor(Q_change), as.factor(T_change))) +
   geom_tile(aes(fill = start_mean), colour ="black") +
   geom_text(aes(label = round(start_mean, 1))) +
-  scale_fill_gradient2(limits = c(-50,20), low = "orchid4", high ="springgreen4",
+  scale_fill_gradient2(limits = c(-35,25), low = "orchid4", high ="springgreen4",
                        name = "Change in date (days)") +
   theme_minimal() +
   theme(legend.position = "top",
