@@ -175,10 +175,14 @@ z <- as.numeric(read.table("GOTM/Output/Mod_z.txt",
 for (i in 1:nrow(all_combinations)) {
   name_use <- paste0("T_",all_combinations$t[i], "_Q_", all_combinations$inflowQ[i])
   
-  temp <- read.table(file.path(out.dir, scenario, paste0("Mod_temp_", name_use, ".txt")),
-                     sep = "\t", skip = 9, header = F, 
-                     col.names = c("datetime", paste0("wtr_",z))) %>% #assign column names
+  temp <- list.files(path = file.path(out.dir, scenario),
+                     pattern = paste0("Mod_temp_", name_use, ".txt"),
+                     recursive = T, full.names = T)[1:8] |>  
+    lapply(read.table, sep = "\t", skip = 9, header = F, 
+           col.names = c("datetime", paste0("wtr_",z))) |> 
+    bind_rows()%>% #assign column names
     mutate(datetime = ymd_hms(datetime))
+
   
   #calculate the metrics
   hourly_schmidt[,i+1] <- ts.schmidt.stability(temp, elter_bathy)[,2]
