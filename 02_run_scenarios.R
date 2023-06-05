@@ -202,7 +202,7 @@ for (i in 1:nrow(all_combinations)) {
   for (j in 1:length(years)) {
     year <- years[j]
     start <- paste0(year, '-01-01 00:00:00')
-    stop <- paste0(year, '-12-31 00:00:00')
+    stop <- paste0(year, '-12-31 23:00:00')
     # change in configuration yaml
     LakeEnsemblR::input_yaml_multiple(file = gotm_config,
                                       key1 = 'time', key2 = 'start', 
@@ -216,7 +216,7 @@ for (i in 1:nrow(all_combinations)) {
     
     #copy the modelled output file proceed by this model and rename
     file.copy(from = "./Output/Mod_temp.txt",
-              to = file.path("./Output/Experiment_output/change_Q_AT_ST", year, paste0("Mod_temp_",
+              to = file.path("./Output/Experiment_output/change_Q_AT", year, paste0("Mod_temp_",
                                                                                        "T_", all_combinations$t[i],
                                                                                        "_Q_", all_combinations$inflowQ[i], 
                                                                                        ".txt")),
