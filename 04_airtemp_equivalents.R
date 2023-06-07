@@ -234,7 +234,8 @@ x1 <- abs_temps %>%
 equiv_effect_summer_temps <- expand.grid(T_change_val = unique(abs_temps$T_change)[-1],
                                          # only want the Q increases (< 1), more Q will cause cooling in summer
                                          Q_change_val = unique(abs_temps$Q_change)[which(unique(abs_temps$Q_change) > 1)]) %>%
-  mutate(mitigate = NA)
+  mutate(mitigate_SWT = NA,
+         mitigate_BWT = NA)
 
 for (i in 2:length(unique(abs_temps$T_change))) {
   T_change_val <- unique(abs_temps$T_change)[i]
@@ -257,12 +258,22 @@ for (i in 2:length(unique(abs_temps$T_change))) {
                        xout = change_val1)$y
     
 
-    # change_val2 <- abs_temps$bottomT[which(abs_temps$Q_change == Q_change_val & 
-    #                                          abs_temps$T_change == T_change_val & 
-    #                                          abs_temps$season == "summer")] - T_only_change$bottomT
+    change_val2 <- T_only_change$bottomT - 
+      abs_temps$bottomT[which(abs_temps$Q_change == Q_change_val & 
+                                 abs_temps$T_change == T_change_val & 
+                                 abs_temps$season == "summer")]
     
-    equiv_effect_summer_temps$mitigate[which(equiv_effect_summer_temps$T_change_val == T_change_val &
+    mitigate2 <- approx(x = x1$bottomT,
+                       y = x1$T_change, 
+                       xout = change_val2)$y
+    
+    
+    equiv_effect_summer_temps$mitigate_SWT[which(equiv_effect_summer_temps$T_change_val == T_change_val &
                                                 equiv_effect_summer_temps$Q_change_val == Q_change_val)] <- mitigate
+    
+    
+    equiv_effect_summer_temps$mitigate_BWT[which(equiv_effect_summer_temps$T_change_val == T_change_val &
+                                               equiv_effect_summer_temps$Q_change_val == Q_change_val)] <- mitigate2
   
   }
   
