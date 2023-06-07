@@ -141,9 +141,11 @@ times_use <- timesteps |>
 
 # for each timestep it extracts the baseline and summary tables
 # then calculates the percentage and absolute changes for each row
-for (j in 4:nrow(timesteps)) {
-  summary <- get(paste0(timesteps$time[j], "_summary")) # extract the summary table for the timestep
-  base <- get(paste0(timesteps$time[j], "_base")) # extract the baseline table for the timestep
+for (j in 1:nrow(times_use)) {
+  summary <- get(paste0(times_use$time[j], "_summary"))
+  # extract the summary table for the timestep
+  base <- get(paste0(times_use$time[j], "_base"))
+  # extract the baseline table for the timestep
   
   #create empty df to put the values in
   assign(x = "temp_perc_change", summary)
@@ -152,29 +154,32 @@ for (j in 4:nrow(timesteps)) {
   for (i in 1:nrow(summary)) {
     # calculate the pecentage chage based on the functions above
     # assings values to the relvent columns, based on names
-    temp_perc_change[i, metrics] <- perc.change.v(summary[i,], 
-                                                  t = as.character(timesteps$val[j]),
+    temp_perc_change[i, metrics] <- perc.change.v(scenario_row = summary[i,], 
+                                                  t = as.character(times_use$val[j]),
                                                   base_df = base)
     
     # calculate the absolute chage based on the functions above
     temp_abs_change[i,metrics] <- abs.change.v(summary[i,], 
-                                               t = as.character(timesteps$val[j]),
+                                               t = as.character(times_use$val[j]),
                                                base_df = base)
     
     
     # write the temporary df
-    select(temp_perc_change[i,], c(timesteps$val[j], Q_change, T_change)) %>% # extract id columns
+    select(temp_perc_change[i,], c(times_use$val[j], Q_change, T_change)) %>% # extract id columns
+      # only want metrics to 3dp
       bind_cols(., round(temp_perc_change[i,metrics], 3)) %>% 
       write.table(., paste0(out_dir, '/', scenario, '/', "Summaries/percent_change_",times_use$time[j], ".txt"),
                   sep = "\t", quote =F, row.names = F,
                   append = T, # append to existing file
-                  col.names =ifelse(file.exists(paste0(out_dir, '/', scenario, '/',
-                                                       "Summaries/percent_change_",times_use$time[j], ".txt")) ==
-                                      T, # if thhe file already exists
-                                    F, # omit the column names
-                                    T))
+                  col.names = ifelse(file.exists(paste0(out_dir, '/', scenario, '/', 
+                                                        "Summaries/percent_change_",
+                                                        times_use$time[j], ".txt")) ==
+                                       T, # if thhe file already exists
+                                     F, # omit the column names
+                                     T))
     
-    select(temp_abs_change[i,], c(timesteps$val[j], Q_change, T_change)) %>% # extract id columns
+    select(temp_abs_change[i,], c(times_use$val[j], Q_change, T_change)) %>% # extract id columns
+      # only want metrics to 3dp
       bind_cols(., round(temp_abs_change[i,metrics], 3)) %>% 
       write.table(., paste0(out_dir, '/', scenario, '/', "Summaries/abs_change_",times_use$time[j], ".txt"),
                   sep = "\t", quote =F, row.names = F,
@@ -185,15 +190,13 @@ for (j in 4:nrow(timesteps)) {
                                     F, # omit the column names
                                     T))
     
-    
-    
     print(i)
     Sys.sleep(0.01)
     flush.console()
   }
   
   
-  print(timesteps$time[j])
+  print(times_use$time[j])
   Sys.sleep(0.01)
   flush.console()
 }
