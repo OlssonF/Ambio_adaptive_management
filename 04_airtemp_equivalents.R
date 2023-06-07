@@ -212,3 +212,60 @@ for (i in 1:length(unique(stability$T_change))) {
 write_delim(equiv_effect_stability, file.path(out_dir, experiment, "Summaries", "air_temp_equiv_summer_stability_new_method.txt"),
             delim = "\t")
 
+
+
+
+# cooling mitigation
+
+abs_temps <- abs_change_seasonal %>%
+  select(season, T_change, Q_change, surfaceT, bottomT) %>%
+  mutate(T_change = as.numeric(as.character(T_change)),
+         Q_change = as.numeric(as.character(Q_change))) %>%
+  arrange(T_change, Q_change)
+
+# extract the values where there is no Q_change, isolate a temperature effect
+# create a vector that will be interpolated
+x1 <- abs_temps %>%
+  filter(Q_change == 1, season == "summer") %>%
+  # needs to be a numberic vector to be interpolated
+  mutate(T_change = as.numeric(as.character(T_change))) %>%
+  arrange(T_change)
+
+equiv_effect_summer_temps <- expand.grid(T_change_val = unique(abs_temps$T_change)[-1],
+                                         # only want the Q increases (< 1), more Q will cause cooling in summer
+                                         Q_change_val = unique(abs_temps$Q_change)[which(unique(abs_temps$Q_change) > 1)]) %>%
+  mutate(mitigate = NA)
+
+for (i in 2:length(unique(abs_temps$T_change))) {
+  T_change_val <- unique(abs_temps$T_change)[i]
+  
+  T_only_change <- abs_temps |> 
+    filter(season == 'summer',
+           T_change == T_change_val,
+           Q_change == 1)
+  
+  for (j in 5:9) { # only the morethan than 1
+    Q_change_val <- unique(abs_temps$Q_change)[j]
+    # extract the effect of a x% Q reduction on summer temperatures
+    change_val1 <- T_only_change$surfaceT - 
+      abs_temps$surfaceT[which(abs_temps$Q_change == Q_change_val & 
+                                 abs_temps$T_change == T_change_val & 
+                                 abs_temps$season == "summer")]
+    
+    mitigate <- approx(x = x1$surfaceT,
+                       y = x1$T_change, 
+                       xout = change_val1)$y
+    
+
+    # change_val2 <- abs_temps$bottomT[which(abs_temps$Q_change == Q_change_val & 
+    #                                          abs_temps$T_change == T_change_val & 
+    #                                          abs_temps$season == "summer")] - T_only_change$bottomT
+    
+    equiv_effect_summer_temps$mitigate[which(equiv_effect_summer_temps$T_change_val == T_change_val &
+                                                equiv_effect_summer_temps$Q_change_val == Q_change_val)] <- mitigate
+  
+  }
+  
+  
+  print(i)
+}
