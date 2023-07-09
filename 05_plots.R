@@ -838,6 +838,116 @@ full_join(inflows, surfaceT, by = "jday") %>%
   theme(panel.grid.minor = element_blank())
 
 
+# Mitigation potential ---------
+MP_summer <- read_delim(file.path(out_dir,experiment, "Summaries", 
+                                    "mitigation_potential_summer.txt"),
+                          show_col_types = F) %>%
+  mutate(Q_reduction = abs((Q_change_val - 1)) * 100)
+
+summer_SWT_MP <- 
+  ggplot(MP_summer, aes(x=T_change_val, y= mitigate_SWT, colour = as.factor(Q_reduction))) +
+  geom_point() +
+  theme_bw() +
+  theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
+  scale_y_continuous(limit = c(0,1.5), 
+                     breaks = seq(0,2.0,0.5)) +
+  scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
+                         guide = guide_legend(direction = "horizontal",
+                                              title.position = "top"))  +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Mitigation potential (°C)") 
+
+summer_VAWT_MP <- 
+  ggplot(MP_summer, aes(x=T_change_val, y= mitigate_VAWT, colour = as.factor(Q_reduction))) +
+  geom_point() +
+  theme_bw() +
+  theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
+  scale_y_continuous(limit = c(0,1.5), 
+                     breaks = seq(0,2.0,0.5)) +
+  scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
+                         guide = guide_legend(direction = "horizontal",
+                                              title.position = "top"))  +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Mitigation potential (°C)") 
+
+summer_BWT_MP <- 
+  ggplot(MP_summer, aes(x=T_change_val, y= mitigate_BWT, colour = as.factor(Q_reduction))) +
+  geom_point() +
+  theme_bw() +
+  theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
+  scale_y_continuous(limit = c(0,1.2), 
+                     breaks = seq(0,2.0,0.2)) +
+  scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
+                         guide = guide_legend(direction = "horizontal",
+                                              title.position = "top"))  +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Mitigation potential (°C)") 
+
+MP_winter <- read_delim(file.path(out_dir,experiment, "Summaries", 
+                                  "mitigation_potential_winter.txt"),
+                        show_col_types = F) %>%
+  mutate(Q_reduction = abs((Q_change_val - 1)) * 100)
+
+winter_SWT_MP <- 
+  ggplot(MP_winter, aes(x=T_change_val, y= mitigate_SWT, colour = as.factor(Q_reduction))) +
+  geom_point() +
+  theme_bw() +
+  theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
+  scale_y_continuous(limit = c(0,1.5), 
+                     breaks = seq(0,2.0,0.5)) +
+  scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
+                         guide = guide_legend(direction = "horizontal",
+                                              title.position = "top"))  +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Mitigation potential (°C)") 
+
+winter_VAWT_MP <- 
+  ggplot(MP_winter, aes(x=T_change_val, y= mitigate_VAWT, colour = as.factor(Q_reduction))) +
+  geom_point() +
+  theme_bw() +
+  theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
+  scale_y_continuous(limit = c(0,1.5), 
+                     breaks = seq(0,2.0,0.5)) +
+  scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
+                         guide = guide_legend(direction = "horizontal",
+                                              title.position = "top"))  +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Mitigation potential (°C)") 
+
+winter_BWT_MP <- ggplot(MP_winter, aes(x=T_change_val, y= mitigate_BWT, colour = as.factor(Q_reduction))) +
+  geom_point() +
+  theme_bw() +
+  theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
+  scale_y_continuous(limit = c(0,1.5), 
+                     breaks = seq(0,2.0,0.2)) +
+  scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
+                         guide = guide_legend(direction = "horizontal",
+                                              title.position = "top"))  +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Mitigation potential (°C)") 
+
+ggarrange(summer_SWT_MP, winter_SWT_MP, labels = c('a) summer',
+                                                   'b) winter')) |> 
+  ggsave(filename = file.path(out_dir, experiment, 'Plots', 'mitigation_potential_SWT.png'),
+         height = 10, width = 20, units = 'cm')
+
+ggarrange(summer_VAWT_MP, winter_VAWT_MP, labels = c('a) summer',
+                                                   'b) winter')) |> 
+  ggsave(filename = file.path(out_dir, experiment, 'Plots', 'mitigation_potential_VAWT.png'),
+         height = 10, width = 20, units = 'cm')
+
 # plots for temperatures without ST effect ----------------
 out_dir <- "GOTM/Output/Experiment_output"
 
@@ -1105,3 +1215,90 @@ ggsave(SWT_AT_Q, path = file.path(out_dir, experiment_without, "Plots"),
        filename = "SWT_change_combined.png",
        width= 20, height = 14, units = "cm")
 #===========================#
+
+# mitigation potential without ST effect
+MP_summer_noST <- read_delim(file.path(out_dir,experiment_without, "Summaries", 
+                                  "mitigation_potential_summer.txt"),
+                        show_col_types = F) %>%
+  mutate(Q_reduction = abs((Q_change_val - 1)) * 100)
+
+summer_SWT_MP_noST <-
+  ggplot(MP_summer_noST, aes(x=T_change_val, y= mitigate_SWT, colour = as.factor(Q_reduction))) +
+  geom_point() +
+  theme_bw() +
+  theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
+  scale_y_continuous(limit = c(0,1.6), 
+                     breaks = seq(0,2.0,0.4)) +
+  scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
+                         guide = guide_legend(direction = "horizontal",
+                                              title.position = "top"))  +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Mitigation potential (°C)") 
+
+summer_VAWT_MP_noST <-
+  MP_summer_noST |> 
+  mutate(above_limit = ifelse(is.na(mitigate_VAWT), T, F),
+         mitigate_VAWT = ifelse(is.na(mitigate_VAWT), 4, mitigate_VAWT)) |> 
+  ggplot(aes(x=T_change_val, y= mitigate_VAWT, colour = as.factor(Q_reduction))) +
+  geom_point(aes(shape = above_limit)) +
+  theme_bw() +
+  theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
+  scale_y_continuous(limit = c(0,4), 
+                     breaks = seq(0,4.0,1)) +
+  scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
+                         guide = guide_legend(direction = "horizontal",
+                                              title.position = "top"))  +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Mitigation potential (°C)") +
+  scale_shape_manual(values = c(19, 4)) +
+  guides(shape = 'none')
+
+MP_winter_noST <- read_delim(file.path(out_dir,experiment_without, "Summaries", 
+                                       "mitigation_potential_winter.txt"),
+                             show_col_types = F) %>%
+  mutate(Q_reduction = abs((Q_change_val - 1)) * 100)
+
+winter_SWT_MP_noST <-
+  ggplot(MP_winter_noST, aes(x=T_change_val, y= mitigate_SWT, colour = as.factor(Q_reduction))) +
+  geom_point() +
+  theme_bw() +
+  theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
+  scale_y_continuous(limit = c(0,4), 
+                     breaks = seq(0,4.0,1)) +
+  scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
+                         guide = guide_legend(direction = "horizontal",
+                                              title.position = "top"))  +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Mitigation potential (°C)") 
+
+winter_VAWT_MP_noST <-
+  ggplot(MP_winter_noST, aes(x=T_change_val, y= mitigate_VAWT, colour = as.factor(Q_reduction))) +
+  geom_point() +
+  theme_bw() +
+  theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
+  scale_y_continuous(limit = c(0,4), 
+                     breaks = seq(0,4.0,1)) +
+  scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
+                         guide = guide_legend(direction = "horizontal",
+                                              title.position = "top"))  +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Mitigation potential (°C)") 
+
+
+ggarrange(summer_SWT_MP_noST, winter_SWT_MP_noST, labels = c('a) summer',
+                                                   'b) winter')) |> 
+  ggsave(filename = file.path(out_dir, experiment_without, 'Plots', 'mitigation_potential_SWT.png'),
+         height = 10, width = 20, units = 'cm')
+
+ggarrange(summer_VAWT_MP_noST, winter_VAWT_MP_noST, labels = c('a) summer',
+                                                     'b) winter')) |> 
+  ggsave(filename = file.path(out_dir, experiment_without, 'Plots', 'mitigation_potential_VAWT.png'),
+         height = 10, width = 20, units = 'cm')
