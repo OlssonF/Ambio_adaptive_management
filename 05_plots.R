@@ -836,3 +836,272 @@ full_join(inflows, surfaceT, by = "jday") %>%
                      breaks = seq(-5,2.5,2.5)) +
   theme_bw() +
   theme(panel.grid.minor = element_blank())
+
+
+# plots for temperatures without ST effect ----------------
+out_dir <- "GOTM/Output/Experiment_output"
+
+# Read in output
+experiment_without <- 'change_Q_AT'
+
+abs_change_without <- read_delim(file.path(out_dir, experiment_without, "Summaries", "abs_change_seasonal_variability.txt"),
+                                 show_col_types = F) %>%
+  mutate(Q_change_percentage = (Q_change - 1) * 100,
+         season = factor(season, levels = c("spring", "summer", "autumn", "winter"))) 
+
+perc_change_without <- read_delim(file.path(out_dir, experiment_without, "Summaries", "perc_change_seasonal_variability.txt"),
+                                  show_col_types = F) %>%
+  mutate(Q_change_percentage = (Q_change - 1) * 100,
+         season = factor(season, levels = c("spring", "summer", "autumn", "winter")))
+
+experiment_with <- 'change_Q_AT_ST'
+
+abs_change_with <- read_delim(file.path(out_dir, experiment_with, "Summaries", "abs_change_seasonal_variability.txt"),
+                              show_col_types = F) %>%
+  mutate(Q_change_percentage = (Q_change - 1) * 100,
+         season = factor(season, levels = c("spring", "summer", "autumn", "winter"))) 
+
+perc_change_with <- read_delim(file.path(out_dir, experiment_with, "Summaries", "perc_change_seasonal_variability.txt"),
+                               show_col_types = F) %>%
+  mutate(Q_change_percentage = (Q_change - 1) * 100,
+         season = factor(season, levels = c("spring", "summer", "autumn", "winter")))
+#===============================#
+
+# VAWT difference with and without ST effect --------------------
+
+# Difference with and without ST effect
+
+VAWT_with <- abs_change_with |> 
+  select(season, Q_change,
+         T_change, vol_av_temp_mean, vol_av_temp_sd, Q_change_percentage) |> 
+  rename(VAWT_with = vol_av_temp_mean)
+
+VAWT_without <- abs_change_without |> 
+  select(season, Q_change,
+         T_change, vol_av_temp_mean, vol_av_temp_sd, Q_change_percentage) |> 
+  rename(VAWT_without = vol_av_temp_mean)
+
+summer_VAWT_stream_diff <- 
+  full_join(VAWT_with, VAWT_without, by = c('season', 'Q_change', "T_change", 'Q_change_percentage')) |> 
+  filter(season == 'summer') |> 
+  # Q_change <= 1) |> 
+  mutate(diff = VAWT_without - VAWT_with,
+         perc = ((VAWT_with - VAWT_without)/VAWT_with)*100) |> 
+  ggplot(aes(x=as.factor(Q_change), as.factor(T_change))) +
+  geom_tile(aes(fill = diff), colour ="black") +
+  geom_text(aes(label = round(diff, 1)), size = 3) +
+  scale_fill_viridis_c(limits = c(-2.5, 0), name = 'Effect difference (°C)', option = 'mako', begin = 0.3, end = 1) +
+  labs(x='Flow change (%)', y = 'Air temperature change (+ °C)', tag = 'a) summer') +
+  scale_x_discrete(breaks = as.factor(unique(VAWT_with$Q_change)),
+                   labels = as.factor(unique(VAWT_with$Q_change_percentage))) +
+  theme_minimal() +
+  theme(plot.tag = element_text(hjust = -1, face = 'bold'))
+
+winter_VAWT_stream_diff <- 
+  full_join(VAWT_with, VAWT_without, by = c('season', 'Q_change', "T_change", 'Q_change_percentage')) |> 
+  filter(season == 'winter') |> 
+  # Q_change >= 1) |> 
+  mutate(diff = VAWT_without - VAWT_with) |> 
+  ggplot(aes(x=as.factor(Q_change), as.factor(T_change))) +
+  geom_tile(aes(fill = diff), colour ="black") +
+  geom_text(aes(label = round(diff, 1)), size = 3) +
+  scale_fill_viridis_c(limits = c(-2.5, 0), option = 'mako', begin = 0.3, end = 1)+
+  labs(x='Flow change (%)', y = 'Air temperature change (+ °C)', tag = 'b) winter') +
+  scale_x_discrete(breaks = as.factor(unique(VAWT_with$Q_change)),
+                   labels = as.factor(unique(VAWT_with$Q_change_percentage))) +
+  theme_minimal() +
+  theme(plot.tag = element_text(hjust = -1, face = 'bold')) 
+
+
+ggpubr::ggarrange(summer_VAWT_stream_diff, 
+                  winter_VAWT_stream_diff, common.legend = T) |> 
+  ggsave(path = file.path(out_dir, experiment_without, "Plots"),
+         filename = "VAT_change_difference.png",
+         width= 20, height = 9, units = "cm")
+
+
+# Absolute changes in VAWT with no ST effect -------------
+VA_without_AT <-
+  VAWT_without %>%
+  # only want to look at Q_change effects
+  filter(Q_change == 1) %>%
+  ggplot(., aes(x=T_change, y=VAWT_without)) +
+  geom_ribbon(aes(ymax = VAWT_without + vol_av_temp_sd,
+                  ymin = VAWT_without - vol_av_temp_sd),colour = NA, alpha =0.3) +
+  geom_line() +
+  geom_point(size =0.9) +
+  facet_wrap(~season) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Change in volume average temperature (°C)")       
+
+
+VA_without_Q <- 
+  VAWT_without %>%
+  # only want to look at Q_change effects
+  filter(T_change == 0) %>%
+  ggplot(., aes(x=Q_change, y=VAWT_without)) +
+  geom_ribbon(aes(ymax = VAWT_without + vol_av_temp_sd,
+                  ymin = VAWT_without - vol_av_temp_sd),colour = NA, alpha =0.3) +
+  geom_line() +
+  geom_point(size =0.9) +
+  facet_wrap(~season) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) +
+  scale_x_continuous(breaks = c(0.3, 0.5, 0.7, 0.9, 1.1,1.3, 1.5, 1.7),
+                     labels = c(-70, -50, -30, -10, 10, 30, 50, 70)) +
+  labs(x = "Flow change (%)",
+       y= "Change in volume average temperature (°C)")     
+
+facet_labs <- c(spring = 'A) spring',
+                summer = 'B) summer',
+                autumn = 'C) autumn',
+                winter = 'D) winter')
+
+VAT_AT_Q <- VAWT_without %>%
+  ggplot(., aes(x=as.factor(Q_change), as.factor(T_change))) +
+  geom_tile(aes(fill = VAWT_without), colour ="black") +
+  geom_text(aes(label = round(VAWT_without, 1))) +
+  scale_fill_gradient2(limits = c(-0.8,4.5), low = "blue", high ="indianred",
+                       name = "Change in volume average temperature (°C)") +
+  theme_minimal() +
+  facet_wrap(~season, labeller = labeller(season = facet_labs)) +
+  theme(legend.position = "top",
+        legend.margin = margin(-0.1,0,-0.4,0, unit = "cm"),
+        strip.text = element_text(size = 12)) +
+  scale_x_discrete(breaks = as.factor(unique(VAWT_without$Q_change)),
+                   labels = as.factor(unique(VAWT_without$Q_change_percentage))) +
+  labs(x= "Flow change (%)",
+       y= "Air temperature change (+ °C)")
+
+# top row of plot (individual driver)
+VAT_ind <- plot_grid(VA_without_AT, VA_without_Q, nrow = 1, align = "vh", labels = c("A","B")) %>%
+  ggsave(path = file.path(out_dir, experiment_without, "Plots"),
+         filename = "VAT_change_individual.png",
+         width= 20, height = 9, units = "cm")
+
+
+# Q and AT combined as seperate plo
+ggsave(VAT_AT_Q, path = file.path(out_dir, experiment_without, "Plots"),
+       filename = "VAT_change_combined.png",
+       width= 20, height = 14, units = "cm")
+
+
+
+# SWT difference with and without ST effect --------------------
+SWT_with <- abs_change_with |> 
+  select(season, Q_change,
+         T_change, surfaceT_mean, surfaceT_sd) |> 
+  rename(SWT_with = surfaceT_mean)
+
+SWT_without <- abs_change_without |> 
+  select(season, Q_change,
+         T_change, surfaceT_mean, surfaceT_sd) |> 
+  rename(SWT_without = surfaceT_mean)
+
+summer_SWT_stream_diff <- 
+  full_join(SWT_with, SWT_without) |> 
+  filter(season == 'summer') |> 
+  mutate(diff = SWT_without - SWT_with) |> 
+  ggplot(aes(x=as.factor(Q_change), as.factor(T_change))) +
+  geom_tile(aes(fill = diff), colour ="black") +
+  geom_text(aes(label = round(diff, 1)), size = 3) +
+  scale_fill_viridis_c(limits = c(-2.5, 0), name = 'Effect difference (°C)',
+                       option = 'mako', begin = 0.3, end = 1) +
+  labs(x='Flow change (%)', y = 'Air temperature change (+ °C)', tag = 'b) winter') +
+  scale_x_discrete(breaks = as.factor(unique(VAWT_with$Q_change)),
+                   labels = as.factor(unique(VAWT_with$Q_change_percentage))) +
+  theme_minimal() +
+  theme(plot.tag = element_text(hjust = -1, face = 'bold')) 
+
+winter_SWT_stream_diff <- 
+  full_join(SWT_with, SWT_without) |> 
+  filter(season == 'winter') |> 
+  mutate(diff = SWT_without - SWT_with) |> 
+  ggplot(aes(x=as.factor(Q_change), as.factor(T_change))) +
+  geom_tile(aes(fill = diff), colour ="black") +
+  geom_text(aes(label = round(diff, 1)), size = 3) +
+  scale_fill_viridis_c(limits = c(-2.5, 0), name = 'Effect difference (°C)',
+                       option = 'mako', begin = 0.3, end = 1) +
+  labs(x='Flow change (%)', y = 'Air temperature change (+ °C)', tag = 'b) winter') +
+  scale_x_discrete(breaks = as.factor(unique(VAWT_with$Q_change)),
+                   labels = as.factor(unique(VAWT_with$Q_change_percentage))) +
+  theme_minimal() +
+  theme(plot.tag = element_text(hjust = -1, face = 'bold')) 
+
+ggpubr::ggarrange(summer_SWT_stream_diff, 
+                  winter_SWT_stream_diff, common.legend = T) |> 
+  ggsave(path = file.path(out_dir, experiment_without, "Plots"),
+         filename = "SWT_change_difference.png",
+         width= 20, height = 9, units = "cm")
+
+
+# Absolute changes in SWT with no ST effect -------------
+SWT_without_AT <-
+  SWT_without %>%
+  # only want to look at Q_change effects
+  filter(Q_change == 1) %>%
+  ggplot(., aes(x=T_change, y=SWT_without)) +
+  geom_ribbon(aes(ymax = SWT_without + surfaceT_sd,
+                  ymin = SWT_without - surfaceT_sd),colour = NA, alpha =0.3) +
+  geom_line() +
+  geom_point(size =0.9) +
+  facet_wrap(~season) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Change in surface water temperature (°C)")       
+
+
+SWT_without_Q <- 
+  SWT_without %>%
+  # only want to look at Q_change effects
+  filter(T_change == 0) %>%
+  ggplot(., aes(x=Q_change, y=SWT_without)) +
+  geom_ribbon(aes(ymax = SWT_without + surfaceT_sd,
+                  ymin = SWT_without - surfaceT_sd),colour = NA, alpha =0.3) +
+  geom_line() +
+  geom_point(size =0.9) +
+  facet_wrap(~season) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) +
+  scale_x_continuous(breaks = c(0.3, 0.5, 0.7, 0.9, 1.1,1.3, 1.5, 1.7),
+                     labels = c(-70, -50, -30, -10, 10, 30, 50, 70)) +
+  labs(x = "Flow change (%)",
+       y= "Change in surface water temperature (°C)")     
+
+facet_labs <- c(spring = 'A) spring',
+                summer = 'B) summer',
+                autumn = 'C) autumn',
+                winter = 'D) winter')
+
+SWT_AT_Q <- 
+  SWT_without %>%
+  ggplot(., aes(x=as.factor(Q_change), as.factor(T_change))) +
+  geom_tile(aes(fill = SWT_without), colour ="black") +
+  geom_text(aes(label = round(SWT_without, 1))) +
+  scale_fill_gradient2(limits = c(-1.2,4.5), low = "blue", high ="indianred",
+                       name = "Change in surface water temperature (°C)") +
+  theme_minimal() +
+  facet_wrap(~season, labeller = labeller(season = facet_labs)) +
+  theme(legend.position = "top",
+        legend.margin = margin(-0.1,0,-0.4,0, unit = "cm"),
+        strip.text = element_text(size = 12)) +
+  scale_x_discrete(breaks = as.factor(unique(VAWT_without$Q_change)),
+                   labels = as.factor(unique(VAWT_without$Q_change_percentage))) +
+  labs(x= "Flow change (%)",
+       y= "Air temperature change (+ °C)")
+
+# top row of plot (individual driver)
+SWT_ind <- plot_grid(SWT_without_AT, SWT_without_Q, nrow = 1, align = "vh", labels = c("A","B")) %>%
+  ggsave(path = file.path(out_dir, experiment_without, "Plots"),
+         filename = "SWT_change_individual.png",
+         width= 20, height = 9, units = "cm")
+
+
+# Q and AT combined as seperate plo
+ggsave(SWT_AT_Q, path = file.path(out_dir, experiment_without, "Plots"),
+       filename = "SWT_change_combined.png",
+       width= 20, height = 14, units = "cm")
+#===========================#
