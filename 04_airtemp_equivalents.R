@@ -169,8 +169,10 @@ stability <- perc_change_seasonal %>%
 
 equiv_effect_stability <- expand.grid(T_change = unique(stability$T_change),
                             # only want the Q reductions (< 1), more Q will cause cooling
-                            Q_change = unique(stability$Q_change)[which(unique(stability$Q_change) < 1)]) %>%
-  mutate(equiv_effect = NA)
+                            Q_change = unique(stability$Q_change)) %>%
+  mutate(effect = ifelse(Q_change > 1, 'mitigate', 
+                         ifelse(Q_change < 1, 'compound', NA)),
+         value = NA)
 
 # extract the values where there is no Q_change, isolate a temperature effect
 # create a vector that will be interpolated
@@ -196,20 +198,38 @@ for (i in 1:length(unique(stability$T_change))) {
                                         stability$T_change == T_change_val & 
                                         stability$season == "summer")] - T_only_change$schmidt
     
-   
+   effect <- approx(x = x2$schmidt, 
+                    y=x2$T_change, 
+                    xout = change_val2)$y
     # approx function linearly interpolates
     # estimate the y value for which the x value is change_val (the change caused by 50% reduction)
-    equiv_effect_stability$equiv_effect[which(equiv_effect_stability$T_change == T_change_val &
-                                                equiv_effect_stability$Q_change == Q_change_val)] <- approx(x = x2$schmidt, 
-                                                                                                            y=x2$T_change, 
-                                                                                                            xout = change_val2)$y
+    equiv_effect_stability$value[which(equiv_effect_stability$T_change == T_change_val &
+                                                equiv_effect_stability$Q_change == Q_change_val)] <- effect
   }
   
-  
+  for (k in 5:9) {
+    Q_change_val <- unique(stability$Q_change)[k]
+    
+    # schmidt
+    change_val <- T_only_change$schmidt - 
+      stability$schmidt[which(stability$Q_change == Q_change_val & 
+                                stability$T_change == T_change_val & 
+                                stability$season == "summer")]
+    
+    mitigate <- approx(x = x2$schmidt,
+                        y = x2$T_change, 
+                        xout = change_val)$y
+    
+    equiv_effect_stability$value[which(equiv_effect_stability$T_change == T_change_val &
+                                         equiv_effect_stability$Q_change == Q_change_val)] <- mitigate
+    
+  }
   print(i)
 }
 
-write_delim(equiv_effect_stability, file.path(out_dir, experiment, "Summaries", "air_temp_equiv_summer_stability_new_method.txt"),
+equiv_effect_stability |> 
+  na.omit(effect) |> 
+  write_delim(file.path(out_dir, experiment, "Summaries", "air_temp_equiv_summer_stability_new_method.txt"),
             delim = "\t")
 
 #================================================#
@@ -237,8 +257,7 @@ mit_summer_temps <- expand.grid(T_change_val = unique(abs_temps$T_change)[-1],
                                          Q_change_val = unique(abs_temps$Q_change)[which(unique(abs_temps$Q_change) > 1)]) %>%
   mutate(mitigate_SWT = NA,
          mitigate_BWT = NA,
-         mitigate_VAWT = NA,
-         mitigate_schmidt = NA)
+         mitigate_VAWT = NA)
 
 for (i in 2:length(unique(abs_temps$T_change))) {
   T_change_val <- unique(abs_temps$T_change)[i]
@@ -281,15 +300,6 @@ for (i in 2:length(unique(abs_temps$T_change))) {
                         y = x1$T_change, 
                         xout = change_val3)$y
     
-    # schmidt
-    change_val4 <- T_only_change$schmidt - 
-      abs_temps$schmidt[which(abs_temps$Q_change == Q_change_val & 
-                                    abs_temps$T_change == T_change_val & 
-                                    abs_temps$season == "summer")]
-    
-    mitigate4 <- approx(x = x1$schmidt,
-                        y = x1$T_change, 
-                        xout = change_val4)$y
     
     
     mit_summer_temps$mitigate_SWT[which(mit_summer_temps$T_change_val == T_change_val &
@@ -302,8 +312,6 @@ for (i in 2:length(unique(abs_temps$T_change))) {
     mit_summer_temps$mitigate_VAWT[which(mit_summer_temps$T_change_val == T_change_val &
                                            mit_summer_temps$Q_change_val == Q_change_val)] <- mitigate3
     
-    mit_summer_temps$mitigate_schmidt[which(mit_summer_temps$T_change_val == T_change_val &
-                                           mit_summer_temps$Q_change_val == Q_change_val)] <- mitigate4
   
   }
   
