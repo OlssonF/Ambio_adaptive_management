@@ -218,7 +218,7 @@ write_delim(equiv_effect_stability, file.path(out_dir, experiment, "Summaries", 
 
 # Mitigation potential ----------------------------------------------------
 abs_temps <- abs_change_seasonal %>%
-  select(season, T_change, Q_change, surfaceT, bottomT, vol_av_temp) %>%
+  select(season, T_change, Q_change, surfaceT, bottomT, vol_av_temp, schmidt) %>%
   mutate(T_change = as.numeric(as.character(T_change)),
          Q_change = as.numeric(as.character(Q_change))) %>%
   arrange(T_change, Q_change)
@@ -237,7 +237,8 @@ mit_summer_temps <- expand.grid(T_change_val = unique(abs_temps$T_change)[-1],
                                          Q_change_val = unique(abs_temps$Q_change)[which(unique(abs_temps$Q_change) > 1)]) %>%
   mutate(mitigate_SWT = NA,
          mitigate_BWT = NA,
-         mitigate_VAWT = NA)
+         mitigate_VAWT = NA,
+         mitigate_schmidt = NA)
 
 for (i in 2:length(unique(abs_temps$T_change))) {
   T_change_val <- unique(abs_temps$T_change)[i]
@@ -280,6 +281,16 @@ for (i in 2:length(unique(abs_temps$T_change))) {
                         y = x1$T_change, 
                         xout = change_val3)$y
     
+    # schmidt
+    change_val4 <- T_only_change$schmidt - 
+      abs_temps$schmidt[which(abs_temps$Q_change == Q_change_val & 
+                                    abs_temps$T_change == T_change_val & 
+                                    abs_temps$season == "summer")]
+    
+    mitigate4 <- approx(x = x1$schmidt,
+                        y = x1$T_change, 
+                        xout = change_val4)$y
+    
     
     mit_summer_temps$mitigate_SWT[which(mit_summer_temps$T_change_val == T_change_val &
                                           mit_summer_temps$Q_change_val == Q_change_val)] <- mitigate
@@ -290,6 +301,9 @@ for (i in 2:length(unique(abs_temps$T_change))) {
     
     mit_summer_temps$mitigate_VAWT[which(mit_summer_temps$T_change_val == T_change_val &
                                            mit_summer_temps$Q_change_val == Q_change_val)] <- mitigate3
+    
+    mit_summer_temps$mitigate_schmidt[which(mit_summer_temps$T_change_val == T_change_val &
+                                           mit_summer_temps$Q_change_val == Q_change_val)] <- mitigate4
   
   }
   
