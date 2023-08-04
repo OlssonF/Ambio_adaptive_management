@@ -383,10 +383,12 @@ plot_grid(stability_ind, stability_AT_Q, nrow =2,
 
 
 # air temperature equivalent changes
-airT_equiv_stability <- ggplot(airT_equiv_summer_stability, 
-                               aes(x=T_change, 
-                                   y= equiv_effect,
-                                   colour = as.factor(Q_reduction))) +
+airT_equiv_stability <- 
+  airT_equiv_summer_stability |> 
+  filter(effect == 'compound') |> 
+  ggplot(aes(x=T_change, 
+             y= value,
+             colour = as.factor(Q_reduction))) +
   geom_point() +
   theme_bw() +
   theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
@@ -421,6 +423,26 @@ ggarrange(plot_grid(stability_ind, stability_AT_Q, nrow =2,
   ggsave(path = file.path(out_dir, experiment, "Plots"),
          filename = "Stability_plots.png",
          width= 20, height = 14, units = "cm")
+
+
+# mitigation potential
+summer_schmidt_MP <- 
+  airT_equiv_summer_stability |> 
+  filter(effect == 'mitigate') |> 
+  ggplot(aes(x=T_change, y= value, colour = as.factor(Q_reduction))) +
+  geom_point() +
+  theme_bw() +
+  theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
+  scale_y_continuous(limit = c(0,1.5), 
+                     breaks = seq(0,2.0,0.2)) +
+  scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
+                         guide = guide_legend(direction = "horizontal",
+                                              title.position = "top"))  +
+  theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0), 
+        panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Mitigation potential (°C)")
+
 #==============================================#
 
 # densdiff =====
@@ -887,7 +909,8 @@ summer_BWT_MP <-
   theme(legend.position = "bottom", legend.margin = margin(0,0,-4,0), 
         panel.grid.minor = element_blank()) +
   labs(x = "Air temperature change (+ °C)",
-       y= "Mitigation potential (°C)") 
+       y= "Mitigation potential (°C)")
+
 
 MP_winter <- read_delim(file.path(out_dir,experiment, "Summaries", 
                                   "mitigation_potential_winter.txt"),
