@@ -1,5 +1,11 @@
 # packages to install
-install.packages('tidyverse','lubridate', 'ggpubr', 'cowplot', 'here', 'zoo')
+install.packages('tidyverse')
+install.packages('lubridate')
+install.packages('ggpubr')
+install.packages('cowplot')
+install.packages('zoo')
+install.packages('here')
 install.packages('remotes')
-remotes::install_github('aemon-j/LakeEnsemblR')
+remotes::install_github('aemon-j/gotmtools', ref = 'yaml')
+remotes::install_github('FLARE-forecast/LakeEnsemblR')
 install.packages('rLakeAnalyzer')
