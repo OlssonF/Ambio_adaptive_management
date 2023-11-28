@@ -2,6 +2,12 @@
 # create input files to use in the experiment looking at the interaction of changing
   # air temperature and inflow volume
 
+if (!dir.exists('GOTM/Input')) {
+  dir.create('GOTM/Input/AT_iterations', recursive = T)
+  dir.create('GOTM/Input/Q_iterations', recursive = T)
+}
+
+
 #  baseline observations to be modified, 8 years
 met_dat <- read.table("./GOTM/met_data_elter_2012-2019.dat", sep = "\t", 
                       header = T)
@@ -93,5 +99,8 @@ for (i in 1:length(flow_iterations)) {
   flush.console()
 }
 
-
 #=========================================#
+
+expand.grid(inflowQ = round(flow_iterations, 1),
+           t = temp_iterations) %>% 
+  readr::write_delim(file = 'GOTM/Output/Experiment_output/scenarios.txt', delim = '\t')
