@@ -9,7 +9,7 @@ source("R/modified_rLA.R")
 source("R/helper_functions.R")
 
 
-# ======= 5. change_Q_AT_ST =======
+# ======= change_Q_AT_ST =======
 # experimental scenarios
 all_combinations <- read.table("./GOTM/Output/Experiment_output/scenarios.txt", header = T)
 
@@ -127,7 +127,7 @@ select(hourly_bottomT, datetime) %>%# extract datetime
 #=====================================================================#
 
 
-# ======= 4. change_Q_AT =======
+# ======= change_Q_AT =======
 
 # experimental scenarios
 all_combinations <- read.table("./GOTM/Output/Experiment_output/scenarios.txt", header = T)
