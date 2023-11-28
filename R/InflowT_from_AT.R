@@ -6,7 +6,7 @@ library("zoo")
 
 
 #read in temperature and discharge data from the pipe
-transfer_temp <- read.csv(file = "./Raw_data/Transfer_data_July2017_Dec2019.csv", header=T) %>%
+transfer_temp <- read.csv(file = "./Data/Transfer_data_July2017_Dec2019.csv", header=T) %>%
   select(Date_Time, Temp) |> 
   mutate(DateTime = dmy_hm(as.character(Date_Time)), #change datetime format
          Date = format(as.Date(DateTime,format="%Y-%m-%d")), #add date only
@@ -36,7 +36,6 @@ transfer_temp_hourly <- transfer_temp %>%
 
 
 merge <- right_join(AT, transfer_temp_hourly, by = "DateTime")
-glimpse(merge)
 
 
 merge_ma <- merge %>%
@@ -68,14 +67,6 @@ merge_ma <- merge_ma %>%
                                   newdata = data.frame(AT = AT_ma)),
          residual_ra = pipe_T - pred_wtr_ra) # find the residual
 
-# ggplot(merge_ma, aes(x=pipe_T, y = pred_wtr_ra)) +
-#   geom_point( colour = "blue", alpha = 0.5) +
-#   geom_abline(slope = 1, intercept = 0)+
-#   scale_x_continuous(limits = c(0, 25)) +
-#   scale_y_continuous(limits = c(0, 25))
-# 
-# hydroGOF::rmse(obs = merge_ma$pipe_T, sim = merge_ma$pred_wtr_ra)
-# error of 1.29
 
 # FILL IN 12 MISSING VALUES with next 24
 IB_inflow_temp_roll  <- IB_inflow_temp_roll %>%
@@ -83,24 +74,5 @@ IB_inflow_temp_roll  <- IB_inflow_temp_roll %>%
                             lead(Water_T, n = 24),
                             Water_T))
 
-# write.csv(IB_inflow_temp_roll, file = "./Inflow_T (derived_roll).csv", row.names = F)
-# 
-# #for GOTM
-# GOTM <- IB_inflow_temp_roll[,c(1,4)]
-# colnames(GOTM) <- c("!DateTime", "Water_T")
-# 
-# 
-# GOTM <- na.exclude(GOTM)
-# write.table(GOTM, file = "./Inflow_T (derived_roll).dat", 
-#             row.names = F, quote = F,  sep ="\t")
-# 
-# #==== wrtie to the GOTM run folder ====
-# setwd("E:/GOTM/elterwater/elterwater run")
-# 
-# write.table(GOTM, file = "Inflow_T_ra210122.dat",
-#             row.names = F, quote = F, sep = "\t")
-# 
-# ggplot(GOTM, aes(x=`!DateTime`, y = Water_T)) +
-#   geom_line()
-# 
+
 # #============================================#
