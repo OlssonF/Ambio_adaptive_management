@@ -6,23 +6,18 @@ library(zoo)
 source("R/helper_functions.R")
 
 # creates a dataframe with the timesteps and the values 
-timesteps <- data.frame(time = c("daily", "jday", "monthly", "yearmon", "seasonal", "seasonyear"),
-                        val = c("date", "jday", "month", "month", "season", "season"))
+timesteps <- data.frame(time = c("seasonal", "seasonyear"),
+                        val = c("season", "season"))
 
-metrics <- c("bottomT",
-             "density_diff",
-             # "md_1",
-             # "md_2",
-             "schmidt", 
-             "surfaceT", 
-             "vol_av_temp")
+metrics <- c("schmidt", 
+             "surfaceT")
 
 out_dir <- "GOTM/Output/Experiment_output"
 #==============================================#
 
 
 
-# ============ 5. change_Q_AT_ST ======================
+# ============ change_Q_AT_ST ======================
 # files to use for looking at changes
 # these are aggreagated to different timesteps
 scenario <- 'change_Q_AT_ST'
