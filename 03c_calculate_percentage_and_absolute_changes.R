@@ -59,12 +59,14 @@ for (j in 1:nrow(times_use)) {
     # assings values to the relvent columns, based on names
     temp_perc_change[i, metrics] <- perc.change.v(scenario_row = summary[i,], 
                                                   t = as.character(times_use$val[j]),
-                                                  base_df = base)
+                                                  base_df = base, 
+                                                  metrics = c("schmidt", "surfaceT"))
     
     # calculate the absolute chage based on the functions above
     temp_abs_change[i,metrics] <- abs.change.v(summary[i,], 
                                                t = as.character(times_use$val[j]),
-                                               base_df = base)
+                                               base_df = base, 
+                                               metrics = c("schmidt", "surfaceT"))
     
     
     # write the temporary df
@@ -151,12 +153,14 @@ for (j in 1:nrow(times_use)) {
     # assings values to the relvent columns, based on names
     temp_perc_change[i, metrics] <- perc.change.v(scenario_row = summary[i,], 
                                                   t = as.character(times_use$val[j]),
-                                                  base_df = base)
+                                                  base_df = base, 
+                                                  metrics = c("schmidt", "surfaceT"))
     
     # calculate the absolute chage based on the functions above
     temp_abs_change[i,metrics] <- abs.change.v(summary[i,], 
                                                t = as.character(times_use$val[j]),
-                                               base_df = base)
+                                               base_df = base,
+                                               metrics = c("schmidt", "surfaceT"))
     
     
     # write the temporary df
