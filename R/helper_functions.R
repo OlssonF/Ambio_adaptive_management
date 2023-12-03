@@ -57,14 +57,7 @@ md.dens.diff <- function(wtr, max.depth, diff) {
                 md$md, max.depth)))
 }
 
-#calculate the density difference between top and bottom
-density.diff <- function(wtr) {
-  surface_col <- colnames(wtr)[which.min(as.numeric(gsub("wtr_", "", colnames(wtr))))]
-  deepest_col <- colnames(wtr)[which.max(as.numeric(gsub("wtr_", "", colnames(wtr))))]
-  diff <- rLakeAnalyzer::water.density(wtr[,deepest_col])  -  
-    rLakeAnalyzer::water.density(wtr[,surface_col])
-  return(diff)
-}
+
 
 # extract the season from date
 as.season <- function(date) {
@@ -98,71 +91,5 @@ as.met.season <- function(date) {
   return(year_season)
 }
 
-##### stratification metriccs #####
-# write function to find longest period per year
-max.strat <- function(temp_diff, dens_diff) {
-  r <- rle(temp_diff > 0.1 &
-             # top warmer than bottom
-             dens_diff > 0.1)
-  max_strat <- max(r$lengths[r$values==TRUE])
-  return(max_strat)
-}
-
-# total stratification
-total.strat <- function(temp_diff, dens_diff) {
-  r <- rle(temp_diff > 0.1 &
-             # top warmer than bottom
-             dens_diff > 0.1)
-  tot_strat <- sum(r$lengths[r$values==TRUE])
-  return(tot_strat)
-}
-
-# total inverse strat
-total.inverse <- function(temp_diff, dens_diff) {
-  r <- rle(temp_diff < -0.1 &
-             # top colder than bottom
-             dens_diff > 0.1)
-  tot_inv <- sum(r$lengths[r$values==TRUE])
-  return(tot_inv)
-}
-
-###=== strat dates ====###
-#getting the dates for the start and end of the longest (normally) stratified period
-strat.dates <- function(temp_diff, dens_diff, dates) {
-  r <- rle(temp_diff > 0.1 &
-             # top warmer than bottom
-             dens_diff > 0.1)
-  
-  # make into a df
-  strat_length <- data.frame(strat = r$values,
-                             lengths = r$lengths) %>%
-    # Get the end of each run
-    mutate(end = cumsum(lengths),
-           # Get the start of each run
-           start = end - lengths + 1)
-  
-  #define the start row
-  start.row <- strat_length |> 
-    filter(strat == T) |>  
-    slice_max(lengths) |> 
-    select(start) |> 
-    pull()
-  #gets the row with the start date
-  
-  #of the run which has the max length and is TRuE
-  end.row <- strat_length |> 
-    filter(strat == T) |>  
-    slice_max(lengths) |> 
-    select(end) |> 
-    pull()#gets the row with the end date
-  
-  #of the run which has the max length and is TRuE
-  strat_dates <- data.frame(start = dates[start.row],
-                            end = dates[end.row])
-  
-  return(strat_dates)
-  
-  
-}
 
 
