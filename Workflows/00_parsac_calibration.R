@@ -8,7 +8,7 @@ cal_location <- 'GOTM/parsac'
 setwd(cal_location)
 
 # write the batch files
-config_file <- 'config_elter_parsac_v2.xml'
+config_file <- 'config_elter_parsac_final.xml'
 runs <- 2000
 bat_outfile <- 'parsac_config.bat'
 
@@ -22,7 +22,7 @@ system(bat_outfile, minimized = F, invisible = F)
 
 
 # extract best values from db
-filename <- 'elter_20230326.db'
+filename <- 'elter_final.db'
 sqlite.driver <- dbDriver("SQLite")
 db <- dbConnect(sqlite.driver,
                 dbname = filename)
@@ -37,9 +37,10 @@ param_vals <- dbReadTable(db,"results") |>
   str_split(';', simplify = T) 
 
 # make into a usable format
-param_vals <- round(as.numeric(as.vector(format(as.numeric(param_vals), scientific = F))), 3)
+param_vals <- c(round(as.numeric(as.vector(format(as.numeric(param_vals[c(1:3,5,6)]), scientific = F))), 3),
+                param_vals[4])
 
-params <- data.frame(param = c('shf', 'swr', 'wsf', 'k_min', 'g1', 'g2', 'dummy'), 
+params <- data.frame(param = c('shf', 'swr', 'wsf', 'g2', 'dummy','k_min'), 
                      vals = param_vals)
 
 write_csv(params, 'calibration_values.csv')

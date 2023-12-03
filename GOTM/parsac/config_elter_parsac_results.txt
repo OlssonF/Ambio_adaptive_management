@@ -1,0 +1,63 @@
+1th best parameter set:
+  gotm.yaml/surface/fluxes/heat/scale_factor = 0.800003
+  gotm.yaml/surface/meteo/swr/scale_factor = 1.01124
+  gotm.yaml/surface/meteo/u10/scale_factor = 1.19992
+  gotm.yaml/turbulence/turb_param/k_min = 3.6124e-07
+  gotm.yaml/light_extinction/g1/constant_value = 0.499907
+  gotm.yaml/light_extinction/g2/constant_value = 1.00302
+Original ln likelihood = -29700.564
+
+Using optimal s.d. for temp = 1.06753.
+ln Likelihood = -29700.6.
+Newly calculated ln likelihood = -29700.564. Original value was -29700.564.
+temp:
+- bias: -0.163
+- mean absolute error = 0.811
+- rmse = 1.068
+- cor = 0.9534
+- s.d. mod = 3.495
+- s.d. obs = 3.351
+
+
+## Second run with "reduced" parameter set
+1th best parameter set:
+  gotm.yaml/surface/fluxes/heat/scale_factor = 0.800809
+  gotm.yaml/surface/meteo/swr/scale_factor = 1.02797
+  gotm.yaml/surface/meteo/u10/scale_factor = 1.19813
+  gotm.yaml/turbulence/turb_param/k_min = 3.70567e-07
+  gotm.yaml/light_extinction/g2/constant_value = 1.01774
+  dummy = 0.634878
+Original ln likelihood = -29819.466
+
+Using optimal s.d. for temp = 1.06995.
+ln Likelihood = -29819.5.
+Newly calculated ln likelihood = -29819.466. Original value was -29819.466.
+temp:
+- bias: -0.1528
+- mean absolute error = 0.811
+- rmse = 1.07
+- cor = 0.9529
+- s.d. mod = 3.492
+- s.d. obs = 3.351
+
+
+## 'Final' calibrationrun 
+1th best parameter set:
+  gotm.yaml/surface/fluxes/heat/scale_factor = 0.800857
+  gotm.yaml/surface/meteo/swr/scale_factor = 1.01817
+  gotm.yaml/surface/meteo/u10/scale_factor = 1.19981
+  gotm.yaml/turbulence/turb_param/k_min = 14e-7
+  gotm.yaml/light_extinction/g2/constant_value = 0.93
+  dummy = 0.195853
+Original ln likelihood = -45854.201
+
+Using optimal s.d. for temp = 1.45226.
+ln Likelihood = -45854.2.
+Newly calculated ln likelihood = -45854.201. Original value was -45854.201.
+temp:
+- bias: -0.5501
+- mean absolute error = 1.121
+- rmse = 1.452
+- cor = 0.9561
+- s.d. mod = 4.548
+- s.d. obs = 4.528
