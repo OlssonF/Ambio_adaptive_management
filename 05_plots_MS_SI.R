@@ -3,13 +3,14 @@ library(lubridate)
 library(ggplot2)
 library(cowplot)
 library(ggpubr)
-
-out_dir <- "GOTM/Output/Experiment_output"
+setwd(here::here())
+out_dir <- "GOTM/Output/Experiment_output/Plots"
 
 # Read in relevant output from the analyses
 experiment <- 'change_Q_AT_ST'
 experiment_without <- 'change_Q_AT'
 
+dir.create(out_dir)
 
 abs_change <- read_delim(file.path(out_dir, experiment, "Summaries", "abs_change_seasonal_variability.txt"),
                          show_col_types = F) %>%
@@ -143,8 +144,8 @@ SWT_AT_Q <- abs_change %>%
 SWT_ind <- plot_grid(SWT_AT, SWT_Q, nrow = 2, align = "vh", labels = c("A","B")) 
 
 plot_grid(SWT_ind, SWT_AT_Q, nrow = 2, rel_heights = c(1.5,1), labels = c("", "C")) %>%
-  ggsave(path = file.path(out_dir, experiment, "Plots"),
-         filename = "SWT_change.png",
+  ggsave(path = out_dir,
+         filename = "Figure1.png",
          width= 15, height = 22, units = "cm")
 
 #------------------------------------------------------#
@@ -189,8 +190,8 @@ airT_equiv_winter_SWT <- ggplot(airT_equiv_winter,
 ggarrange(airT_equiv_summer_SWT, airT_equiv_winter_SWT,
           labels = c("A) summer SWT", "B) winter SWT"),
           hjust = -0.5) %>%
-  ggsave(path = file.path(out_dir, experiment, "Plots"),
-         filename = "airT_equiv_SWT.png",
+  ggsave(path = out_dir,
+         filename = "Figure2.png",
          width= 15, height = 8, units = "cm")
 
 #-----------------------------------------------------#
@@ -278,8 +279,8 @@ ggarrange(plot_grid(stability_ind, stability_AT_Q, nrow =2,
           plot_grid(NULL, airT_equiv_stability, NULL, rel_heights = c(0.3,1,0.3), ncol = 1,
                     labels = c("", "D", ""), hjust = -2), 
           widths = c(1.2, 1))  %>%
-  ggsave(path = file.path(out_dir, experiment, "Plots"),
-         filename = "Stability_plots.png",
+  ggsave(path = out_dir,
+         filename = "Figure3.png",
          width= 20, height = 14, units = "cm")
 
 #-------------------------------------------------------#
@@ -314,8 +315,8 @@ SWT_stream_diff <-
   theme(plot.tag = element_text(hjust = -1, face = 'bold')) 
 
 SWT_stream_diff %>%
-  ggsave(path = file.path(out_dir, experiment_without, "Plots"),
-         filename = "SWT_stream_difference.png",
+  ggsave(path =  out_dir,
+         filename = "Figure4.png",
          width= 18, height = 8, units = "cm")
   #------------------------------------------------------#
 
@@ -418,12 +419,11 @@ mp_plots <- ggarrange(ggarrange(summer_swt_mp,
           nrow = 2, align = 'hv')  
 
 ggarrange(legends, mp_plots, widths = c(1.2,4))|>  
-  ggsave(filename = file.path(out_dir, experiment, 'Plots', 'mitigation_potential_combined.png'),
+  ggsave(path = out_dir, filename = 'Figure5.png',
          height = 12, width = 21, units = 'cm')
 
 #--------------------------------------------------#
 
-# Figure S2 cal/val
 
 # Figure S4 autumn/spring SWT ---------------------
 # SWT w/ AT
@@ -486,12 +486,12 @@ SWT_AT_Q <- abs_change %>%
 SWT_ind <- plot_grid(SWT_AT, SWT_Q, nrow = 2, align = "vh", labels = c("A","B")) 
 
 plot_grid(SWT_ind, SWT_AT_Q, nrow = 2, rel_heights = c(1.5,1), labels = c("", "C")) %>%
-  ggsave(path = file.path(out_dir, experiment, "Plots"),
-         filename = "SWT_change_S1.png",
+  ggsave(path = out_dir,
+         filename = "FigureS4.png",
          width= 15, height = 22, units = "cm")
 
 
-# Figure s5 - responses with stream warmsing mitigation
+# Figure s5 ------------
 # SWT w/ AT
 SWT_AT_without <-
   abs_change_without %>%
@@ -553,7 +553,7 @@ SWT_AT_Q_without <- abs_change_without %>%
 SWT_ind_without <- plot_grid(SWT_AT_without, SWT_Q_without, nrow = 2, align = "vh", labels = c("A","B")) 
 
 plot_grid(SWT_ind_without, SWT_AT_Q_without, nrow = 2, rel_heights = c(1.5,1), labels = c("", "C")) %>%
-  ggsave(path = file.path(out_dir, experiment_without, "Plots"),
-         filename = "SWT_change_without.png",
+  ggsave(path = out_dir,
+         filename = "FigureS5.png",
          width= 15, height = 22, units = "cm")
   
