@@ -5,6 +5,7 @@ The scripts to run the workflow are in the `Workflows` folder.
 The steps are 0. Install packages (run `install_packages.R`), 1. run GOTM scenarios; 2. run post-model analysis; and 3. Generate figures
 
 ## To rerun post-modelling analysis and reproduce figures
+- Run `download_output.R`, this will download the GOTM output generated using the workflow below from the archive version on Zenodo. This means if you don't have GOTM installed and setup you can run the analysis and figures.
 - Run `Workflows/03a_calculate_metrics.R`. Calculates the water column stability and surface water temperatures from GOTM output. 
 - Run `Workflows/03b_aggregate_to_timesteps.R`. Calculates the seasonal metrics.
 - Run `Workflows/03c_calculate_change.R`. Calculates the change from baseline conditions (no air temperature or flow change).
@@ -27,4 +28,4 @@ The configuration files for GOTM calibration using ParSAC are also provided in `
 
 - `helper_functions.R`contains small functions to deal with date times and calculating changes
 - `lake-inflow difference.R` contains code to calculate the average lake - inflow temperature difference across the modelling period and generate an SI plot of results
-- `InflowR_from_AT.R` shows the method used to estimate inflow temperature when no observations were available. Uses raw data from the `Data` folder. s
+- `InflowR_from_AT.R` shows the method used to estimate inflow temperature when no observations were available. Uses raw data from the `Data` folder.
