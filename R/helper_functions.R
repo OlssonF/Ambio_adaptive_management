@@ -15,44 +15,20 @@ abs.change <-  function(old, new) {
 
 
 # vectorized version of percentage change function
-perc.change.v <- function(scenario_row, base_df, t) {
+perc.change.v <- function(scenario_row, base_df, t, metrics) {
   old <- base_df[which(base_df[,t] == pull(scenario_row[,t])), # matches the timestep
-                 c("bottomT",
-                   "density_diff",
-                   #"md_1",
-                   #"md_2",
-                   "schmidt", 
-                   "surfaceT", 
-                   "vol_av_temp")] 
-  new <- scenario_row[,c("bottomT",
-                         "density_diff",
-                         #"md_1",
-                         #"md_2",
-                         "schmidt", 
-                         "surfaceT", 
-                         "vol_av_temp")]
+                 metrics] 
+  new <- scenario_row[,metrics]
   perc_change <- percent.change(old, new)
   
   return(perc_change)
 }
 
-abs.change.v <- function(scenario_row, base_df, t) {
+abs.change.v <- function(scenario_row, base_df, t, metrics) {
   old <- base_df[which(base_df[,t] == pull(scenario_row[,t])),
-                 c("bottomT",
-                   "density_diff",
-                   #"md_1",
-                   #"md_2",
-                   "schmidt", 
-                   "surfaceT", 
-                   "vol_av_temp")]
+                 metrics]
   
-  new <- scenario_row[,c("bottomT",
-                         "density_diff",
-                         #"md_1",
-                         #"md_2",
-                         "schmidt", 
-                         "surfaceT", 
-                         "vol_av_temp")]
+  new <- scenario_row[metrics]
   abs_change <-  abs.change(old, new)
   
   return(abs_change)
