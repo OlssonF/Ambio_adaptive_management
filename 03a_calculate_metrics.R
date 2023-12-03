@@ -24,24 +24,8 @@ scenario <- 'change_Q_AT_ST'
 hourly_schmidt <- data.frame(datetime = seq(start_date, end_date, "hour"))
 hourly_schmidt[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
 
-hourly_vol_av <- data.frame(datetime = seq(start_date, end_date, "hour"))
-hourly_vol_av[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
-
-hourly_density_diff <- data.frame(datetime = seq(start_date, end_date, "hour"))
-hourly_density_diff[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
-
-hourly_md1 <- data.frame(datetime = seq(start_date, end_date, "hour"))
-hourly_md1[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
-
-hourly_md2 <- data.frame(datetime = seq(start_date, end_date, "hour"))
-hourly_md2[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
-
 hourly_surfaceT <- data.frame(datetime = seq(start_date, end_date, "hour"))
 hourly_surfaceT[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
-
-hourly_bottomT <- data.frame(datetime = seq(start_date, end_date, "hour"))
-hourly_bottomT[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
-
 
 # column heading, date and depths
 z <- as.numeric(read.table("GOTM/Output/Obs_z.txt", 
@@ -61,24 +45,15 @@ for (i in 1:nrow(all_combinations)) {
                            recursive = T, full.names = T)[1:8] |>  
     lapply(read.table, sep = "\t", skip = 9, header = F, 
            col.names = c("datetime", paste0("wtr_",z))) |> 
-    bind_rows()%>% #assign column names
+    bind_rows() %>% #assign column names
     mutate(datetime = ymd_hms(datetime))
   
-  # temp <- read.table(file.path(out.dir, scenario, paste0("Mod_temp_", name_use, ".txt")),
-  #                    sep = "\t", skip = 9, header = F, 
-  #                    col.names = c("datetime", paste0("wtr_",z))) %>% #assign column names
-  #   mutate(datetime = ymd_hms(datetime))
   
   #calculate the metrics
   hourly_schmidt[,i+1] <- ts.schmidt.stability(temp, elter_bathy)[,2]
-  hourly_vol_av[,i+1] <-  ts.layer.temperature(temp, elter_bathy, top = 0, bottom = 6)[,2]
-  hourly_density_diff[,i+1] <- density.diff(temp[, -1])
-  # hourly_md1[,i+1] <- ts.metaD.density(temp) %>%
-  #   mutate(top = ifelse(is.nan(top), 6, top)) %>%
-  #   select(top)
-  # hourly_md2[,i+1] <- md.dens.diff(temp, max.depth = 6, diff = 0.1) #second md method (0.1 dens diff)
+  
   hourly_surfaceT[,i+1] <- temp$wtr_0.06
-  hourly_bottomT[,i+1] <- temp$wtr_5.94
+ 
   
   print(i)
   Sys.sleep(0.01)
@@ -88,19 +63,9 @@ for (i in 1:nrow(all_combinations)) {
 dir.create(file.path(out.dir, scenario, 'Summaries'), recursive = T, showWarnings = F)
 
 #write the output to summaries
-select(hourly_density_diff, datetime) %>%# extract datetime
-  bind_cols(., round(hourly_density_diff[,2:ncol(hourly_density_diff)], 4)) %>% # rounded numeric columns
-  readr::write_delim(.,file.path(out.dir, scenario, "Summaries", "Hourly_density_diff.txt"),
-                     delim = "\t")
-
 select(hourly_schmidt, datetime) %>%# extract datetime
   bind_cols(., round(hourly_schmidt[,2:ncol(hourly_schmidt)], 4)) %>% # rounded numeric columns
   readr::write_delim(.,file.path(out.dir, scenario, "Summaries", "Hourly_schmidt.txt"),
-                     delim = "\t")
-
-select(hourly_vol_av, datetime) %>%# extract datetime
-  bind_cols(., round(hourly_vol_av[,2:ncol(hourly_vol_av)], 4)) %>% # rounded numeric columns
-  readr::write_delim(.,file.path(out.dir, scenario, "Summaries","Hourly_vol_av_temp.txt"),
                      delim = "\t")
 
 
@@ -108,22 +73,6 @@ select(hourly_surfaceT, datetime) %>%# extract datetime
   bind_cols(., round(hourly_surfaceT[,2:ncol(hourly_surfaceT)], 4)) %>% # rounded numeric columns
   readr::write_delim(., file.path(out.dir, scenario, "Summaries","Hourly_surfaceT.txt"),
                      delim  = "\t")
-
-select(hourly_bottomT, datetime) %>%# extract datetime
-  bind_cols(., round(hourly_bottomT[,2:ncol(hourly_bottomT)], 4)) %>% # rounded numeric columns
-  readr::write_delim(.,file.path(out.dir, scenario, "Summaries","Hourly_bottomT.txt"),
-                     delim = "\t")
-
-
-# select(hourly_md1, datetime) %>%# extract datetime
-#   bind_cols(., round(hourly_md1[,2:ncol(hourly_md1)], 4)) %>% # rounded numeric columns
-#   write.table(., "./a - airT/Summaries/Hourly_md_1.txt",
-#               sep = "\t", row.names = F, quote = F)
-# 
-# select(hourly_md2, datetime) %>%# extract datetime
-#   bind_cols(., round(hourly_md2[,2:ncol(hourly_md2)], 4)) %>% # rounded numeric columns
-#   write.table(., "./a - airT/Summaries/Hourly_md_2.txt",
-#               sep = "\t", row.names = F, quote = F)
 #=====================================================================#
 
 
@@ -144,24 +93,8 @@ scenario <- 'change_Q_AT'
 hourly_schmidt <- data.frame(datetime = seq(start_date, end_date, "hour"))
 hourly_schmidt[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
 
-hourly_vol_av <- data.frame(datetime = seq(start_date, end_date, "hour"))
-hourly_vol_av[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
-
-hourly_density_diff <- data.frame(datetime = seq(start_date, end_date, "hour"))
-hourly_density_diff[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
-
-# hourly_md1 <- data.frame(datetime = seq(start_date, end_date, "hour"))
-# hourly_md1[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
-# 
-# hourly_md2 <- data.frame(datetime = seq(start_date, end_date, "hour"))
-# hourly_md2[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
-
 hourly_surfaceT <- data.frame(datetime = seq(start_date, end_date, "hour"))
 hourly_surfaceT[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
-
-hourly_bottomT <- data.frame(datetime = seq(start_date, end_date, "hour"))
-hourly_bottomT[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
-
 
 # column heading, date and depths
 z <- as.numeric(read.table("GOTM/Output/Mod_z.txt", 
@@ -186,15 +119,8 @@ for (i in 1:nrow(all_combinations)) {
   
   #calculate the metrics
   hourly_schmidt[,i+1] <- ts.schmidt.stability(temp, elter_bathy)[,2]
-  hourly_vol_av[,i+1] <-  ts.layer.temperature(temp, elter_bathy, top = 0, bottom = 6)[,2]
-  hourly_density_diff[,i+1] <- density.diff(temp[, -1])
-  # hourly_md1[,i+1] <- ts.metaD.density(temp) %>%
-  #   mutate(top = ifelse(is.nan(top), 6, top)) %>%
-  #   select(top)
-  # hourly_md2[,i+1] <- md.dens.diff(temp, max.depth = 6, diff = 0.1) #second md method (0.1 dens diff)
   hourly_surfaceT[,i+1] <- temp$wtr_0.06
-  hourly_bottomT[,i+1] <- temp$wtr_5.94
-  
+
   print(i)
   Sys.sleep(0.01)
   flush.console()
@@ -203,40 +129,16 @@ for (i in 1:nrow(all_combinations)) {
 dir.create(file.path(out.dir, scenario, 'Summaries'), recursive = T, showWarnings = F)
 
 #write the output to summaries
-select(hourly_density_diff, datetime) %>%# extract datetime
-  bind_cols(., round(hourly_density_diff[,2:ncol(hourly_density_diff)], 4)) %>% # rounded numeric columns
-  write.table(.,file.path(out.dir, scenario, "Summaries", "Hourly_density_diff.txt"),
-              sep = "\t", row.names = F, quote = F)
-
 select(hourly_schmidt, datetime) %>%# extract datetime
   bind_cols(., round(hourly_schmidt[,2:ncol(hourly_schmidt)], 4)) %>% # rounded numeric columns
   write.table(.,file.path(out.dir, scenario, "Summaries", "Hourly_schmidt.txt"),
               sep = "\t", row.names = F, quote = F)
-
-select(hourly_vol_av, datetime) %>%# extract datetime
-  bind_cols(., round(hourly_vol_av[,2:ncol(hourly_vol_av)], 4)) %>% # rounded numeric columns
-  write.table(.,file.path(out.dir, scenario, "Summaries","Hourly_vol_av_temp.txt"),
-              sep = "\t", row.names = F, quote = F)
-
-# select(hourly_md1, datetime) %>%# extract datetime
-#   bind_cols(., round(hourly_md1[,2:ncol(hourly_md1)], 4)) %>% # rounded numeric columns
-#   write.table(., "./a - airT/Summaries/Hourly_md_1.txt",
-#               sep = "\t", row.names = F, quote = F)
-# 
-# select(hourly_md2, datetime) %>%# extract datetime
-#   bind_cols(., round(hourly_md2[,2:ncol(hourly_md2)], 4)) %>% # rounded numeric columns
-#   write.table(., "./a - airT/Summaries/Hourly_md_2.txt",
-#               sep = "\t", row.names = F, quote = F)
 
 select(hourly_surfaceT, datetime) %>%# extract datetime
   bind_cols(., round(hourly_surfaceT[,2:ncol(hourly_surfaceT)], 4)) %>% # rounded numeric columns
   write.table(., file.path(out.dir, scenario, "Summaries","Hourly_surfaceT.txt"),
               sep = "\t", row.names = F, quote = F)
 
-select(hourly_bottomT, datetime) %>%# extract datetime
-  bind_cols(., round(hourly_bottomT[,2:ncol(hourly_bottomT)], 4)) %>% # rounded numeric columns
-  write.table(.,file.path(out.dir, scenario, "Summaries","Hourly_bottomT.txt"),
-              sep = "\t", row.names = F, quote = F)
 #=====================================================================#
 
 
