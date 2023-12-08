@@ -5,7 +5,6 @@ library(rLakeAnalyzer)
 dir <- here::here()
 setwd(dir)
 out.dir <- 'GOTM/Output/Experiment_output'
-source("R/modified_rLA.R")
 source("R/helper_functions.R")
 
 
@@ -28,7 +27,7 @@ hourly_surfaceT <- data.frame(datetime = seq(start_date, end_date, "hour"))
 hourly_surfaceT[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
 
 # column heading, date and depths
-z <- as.numeric(read.table("GOTM/Output/Obs_z.txt", 
+z <- as.numeric(read.table("GOTM/Output/Mod_z.txt", 
                            nrows = 1, # the rows are all repeats
                            skip =9, 
                            header = F, 
