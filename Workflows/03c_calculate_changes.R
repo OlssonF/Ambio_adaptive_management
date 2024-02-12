@@ -10,7 +10,8 @@ timesteps <- data.frame(time = c("seasonal", "seasonyear"),
                         val = c("season", "season"))
 
 metrics <- c("schmidt", 
-             "surfaceT")
+             "surfaceT",
+             "bottomT")
 
 out_dir <- "GOTM/Output/Experiment_output"
 #==============================================#
@@ -60,13 +61,13 @@ for (j in 1:nrow(times_use)) {
     temp_perc_change[i, metrics] <- perc.change.v(scenario_row = summary[i,], 
                                                   t = as.character(times_use$val[j]),
                                                   base_df = base, 
-                                                  metrics = c("schmidt", "surfaceT"))
+                                                  metrics = c("schmidt", "surfaceT", "bottomT"))
     
     # calculate the absolute chage based on the functions above
     temp_abs_change[i,metrics] <- abs.change.v(summary[i,], 
                                                t = as.character(times_use$val[j]),
                                                base_df = base, 
-                                               metrics = c("schmidt", "surfaceT"))
+                                               metrics = c("schmidt", "surfaceT", "bottomT"))
     
     
     # write the temporary df
@@ -154,13 +155,13 @@ for (j in 1:nrow(times_use)) {
     temp_perc_change[i, metrics] <- perc.change.v(scenario_row = summary[i,], 
                                                   t = as.character(times_use$val[j]),
                                                   base_df = base, 
-                                                  metrics = c("schmidt", "surfaceT"))
+                                                  metrics = c("schmidt", "surfaceT", "bottomT"))
     
     # calculate the absolute chage based on the functions above
     temp_abs_change[i,metrics] <- abs.change.v(summary[i,], 
                                                t = as.character(times_use$val[j]),
                                                base_df = base,
-                                               metrics = c("schmidt", "surfaceT"))
+                                               metrics = c("schmidt", "surfaceT", "bottomT"))
     
     
     # write the temporary df

@@ -26,6 +26,9 @@ hourly_schmidt[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t
 hourly_surfaceT <- data.frame(datetime = seq(start_date, end_date, "hour"))
 hourly_surfaceT[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
 
+hourly_bottomT <- data.frame(datetime = seq(start_date, end_date, "hour"))
+hourly_bottomT[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
+
 # column heading, date and depths
 z <- as.numeric(read.table("GOTM/Output/Mod_z.txt", 
                            nrows = 1, # the rows are all repeats
@@ -52,6 +55,8 @@ for (i in 1:nrow(all_combinations)) {
   hourly_schmidt[,i+1] <- ts.schmidt.stability(temp, elter_bathy)[,2]
   
   hourly_surfaceT[,i+1] <- temp$wtr_0.06
+  
+  hourly_bottomT[,i+1] <- temp$wtr_5.94
  
   
   print(i)
@@ -71,6 +76,11 @@ select(hourly_schmidt, datetime) %>%# extract datetime
 select(hourly_surfaceT, datetime) %>%# extract datetime
   bind_cols(., round(hourly_surfaceT[,2:ncol(hourly_surfaceT)], 4)) %>% # rounded numeric columns
   readr::write_delim(., file.path(out.dir, scenario, "Summaries","Hourly_surfaceT.txt"),
+                     delim  = "\t")
+
+select(hourly_surfaceT, datetime) %>%# extract datetime
+  bind_cols(., round(hourly_bottomT[,2:ncol(hourly_bottomT)], 4)) %>% # rounded numeric columns
+  readr::write_delim(., file.path(out.dir, scenario, "Summaries","Hourly_bottomT.txt"),
                      delim  = "\t")
 #=====================================================================#
 
@@ -94,6 +104,9 @@ hourly_schmidt[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t
 
 hourly_surfaceT <- data.frame(datetime = seq(start_date, end_date, "hour"))
 hourly_surfaceT[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
+
+hourly_bottomT <- data.frame(datetime = seq(start_date, end_date, "hour"))
+hourly_bottomT[ ,paste0("Q_",all_combinations$inflowQ, "_T_", all_combinations$t)] <- NA
 
 # column heading, date and depths
 z <- as.numeric(read.table("GOTM/Output/Mod_z.txt", 
@@ -119,7 +132,8 @@ for (i in 1:nrow(all_combinations)) {
   #calculate the metrics
   hourly_schmidt[,i+1] <- ts.schmidt.stability(temp, elter_bathy)[,2]
   hourly_surfaceT[,i+1] <- temp$wtr_0.06
-
+  hourly_bottomT[,i+1] <- temp$wtr_5.94
+  
   print(i)
   Sys.sleep(0.01)
   flush.console()
@@ -138,6 +152,10 @@ select(hourly_surfaceT, datetime) %>%# extract datetime
   write.table(., file.path(out.dir, scenario, "Summaries","Hourly_surfaceT.txt"),
               sep = "\t", row.names = F, quote = F)
 
+select(hourly_surfaceT, datetime) %>%# extract datetime
+  bind_cols(., round(hourly_bottomT[,2:ncol(hourly_bottomT)], 4)) %>% # rounded numeric columns
+  readr::write_delim(., file.path(out.dir, scenario, "Summaries","Hourly_bottomT.txt"),
+                     delim  = "\t")
 #=====================================================================#
 
 

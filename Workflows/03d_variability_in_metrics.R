@@ -6,7 +6,6 @@ library(rLakeAnalyzer)
 
 
 source("R/helper_functions.R")
-source("r/modified_rLA.R")
 
 
 # ====== change Q_AT_ST=====
@@ -29,14 +28,14 @@ perc_change_year_season <- read.delim(file.path(out_dir, "Summaries/percent_chan
 # for the year_season summary, calculate the sd and mean change
 abs_change_seasonal <- abs_change_year_season %>%
   group_by(season, Q_change, T_change) %>%
-  summarise_at(vars("schmidt":"surfaceT"),  # for all metrics
+  summarise_at(vars("schmidt":"bottomT"),  # for all metrics
                list(mean = mean, # mean
                     sd = sd)) # want to know the variability in the change in metrics
 
 
 perc_change_seasonal <- perc_change_year_season %>%  
   group_by(season, Q_change, T_change) %>%
-  summarise_at(vars("schmidt":"surfaceT"), 
+  summarise_at(vars("schmidt":"bottomT"), 
                list(mean = mean, # mean change in seasonal metrics
                     sd = sd))# want to know the variability in the change in metrics
   
@@ -77,14 +76,14 @@ perc_change_year_season <- read.delim(file.path(out_dir, "Summaries/percent_chan
 # for the year_season summary, calculate the sd and mean change
 abs_change_seasonal <- abs_change_year_season %>%
   group_by(season, Q_change, T_change) %>%
-  summarise_at(vars("schmidt":"surfaceT"),  # for all metrics
+  summarise_at(vars("schmidt":"bottomT"),  # for all metrics
                list(mean = mean, # mean
                     sd = sd)) # want to know the variability in the change in metrics
 
 
 perc_change_seasonal <- perc_change_year_season %>%  
   group_by(season, Q_change, T_change) %>%
-  summarise_at(vars("schmidt":"surfaceT"), 
+  summarise_at(vars("schmidt":"bottomT"), 
                list(mean = mean, # mean change in seasonal metrics
                     sd = sd))# want to know the variability in the change in metrics
 
