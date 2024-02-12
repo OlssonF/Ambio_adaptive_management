@@ -5,42 +5,42 @@ library(cowplot)
 library(ggpubr)
 setwd(here::here())
 out_dir <- "GOTM/Output/Experiment_output/Plots"
-
+in_dir <- "GOTM/Output/Experiment_output"
 # Read in relevant output from the analyses
 experiment <- 'change_Q_AT_ST'
 experiment_without <- 'change_Q_AT'
 
 dir.create(out_dir)
 
-abs_change <- read_delim(file.path(out_dir, experiment, "Summaries", "abs_change_seasonal_variability.txt"),
+abs_change <- read_delim(file.path(in_dir, experiment, "Summaries", "abs_change_seasonal_variability.txt"),
                          show_col_types = F) %>%
   mutate(Q_change_percentage = (Q_change - 1) * 100,
          season = factor(season, levels = c("spring", "summer", "autumn", "winter"))) 
 
-abs_change_without <- read_delim(file.path(out_dir, experiment_without, "Summaries", "abs_change_seasonal_variability.txt"),
+abs_change_without <- read_delim(file.path(in_dir, experiment_without, "Summaries", "abs_change_seasonal_variability.txt"),
                                  show_col_types = F) %>%
   mutate(Q_change_percentage = (Q_change - 1) * 100,
          season = factor(season, levels = c("spring", "summer", "autumn", "winter"))) 
 
 
-perc_change <- read_delim(file.path(out_dir, experiment, "Summaries", "perc_change_seasonal_variability.txt"),
+perc_change <- read_delim(file.path(in_dir, experiment, "Summaries", "perc_change_seasonal_variability.txt"),
                           show_col_types = F) %>%
   mutate(Q_change_percentage = (Q_change - 1) * 100,
          season = factor(season, levels = c("spring", "summer", "autumn", "winter")))
 
 
-airT_equiv_summer <- read_delim(file.path(out_dir,experiment, "Summaries", 
+airT_equiv_summer <- read_delim(file.path(in_dir,experiment, "Summaries", 
                                           "air_temp_equiv_summerSWT.txt"),
                                 show_col_types = F) %>%
   mutate(Q_reduction = abs((Q_change_val - 1)) * 100)
 
 
-airT_equiv_winter <- read_delim(file.path(out_dir,experiment, "Summaries", "air_temp_equiv_winterSWT.txt"),
+airT_equiv_winter <- read_delim(file.path(in_dir,experiment, "Summaries", "air_temp_equiv_winterSWT.txt"),
                                 show_col_types = F) %>%
   mutate(Q_increase = abs((Q_change_val - 1)) * 100)
 
 
-airT_equiv_summer_stability <- read_delim(file.path(out_dir,experiment, "Summaries",
+airT_equiv_summer_stability <- read_delim(file.path(in_dir,experiment, "Summaries",
                                                     "air_temp_equiv_summer_stability.txt"),
                                           show_col_types = F) |> 
   mutate(Q_reduction = abs((Q_change - 1)) * 100,
@@ -48,7 +48,7 @@ airT_equiv_summer_stability <- read_delim(file.path(out_dir,experiment, "Summari
 
 
 
-airT_equiv_summer_stability_without <- read_delim(file.path(out_dir,experiment_without, "Summaries",
+airT_equiv_summer_stability_without <- read_delim(file.path(in_dir,experiment_without, "Summaries",
                                                     "air_temp_equiv_summer_stability.txt"),
                                           show_col_types = F) |>  
   mutate(Q_reduction = abs((Q_change - 1)) * 100,
@@ -57,24 +57,24 @@ airT_equiv_summer_stability_without <- read_delim(file.path(out_dir,experiment_w
 
 
 # Mitigiation potential 
-MP_summer <- read_delim(file.path(out_dir,experiment, "Summaries", 
+MP_summer <- read_delim(file.path(in_dir,experiment, "Summaries", 
                                   "mitigation_potential_summerSWT.txt"),
                         show_col_types = F) %>%
   mutate(Q_reduction = abs((Q_change_val - 1)) * 100,
          mitigate_inflow = 'No') 
 
-MP_summer_noST <- read_delim(file.path(out_dir,experiment_without, "Summaries", 
+MP_summer_noST <- read_delim(file.path(in_dir,experiment_without, "Summaries", 
                                        "mitigation_potential_summerSWT.txt"),
                              show_col_types = F) %>%
   mutate(Q_reduction = abs((Q_change_val - 1)) * 100,
          mitigate_inflow = 'Yes')
-MP_winter <- read_delim(file.path(out_dir,experiment, "Summaries", 
+MP_winter <- read_delim(file.path(in_dir,experiment, "Summaries", 
                                   "mitigation_potential_winterSWT.txt"),
                         show_col_types = F) %>%
   mutate(Q_reduction = abs((Q_change_val - 1)) * 100,
          mitigate_inflow = 'No') 
 
-MP_winter_noST <- read_delim(file.path(out_dir,experiment_without, "Summaries", 
+MP_winter_noST <- read_delim(file.path(in_dir,experiment_without, "Summaries", 
                                        "mitigation_potential_winter.txt"),
                              show_col_types = F) %>%
   mutate(Q_reduction = abs((Q_change_val - 1)) * 100,
@@ -227,7 +227,7 @@ stability_Q <- perc_change %>%
   scale_x_continuous(breaks = c(0.3, 0.5, 0.7, 0.9, 1.1,1.3, 1.5, 1.7),
                      labels = c(-70, -50, -30, -10, 10, 30, 50, 70)) +
   labs(x = "Flow change (%)",
-       y= "Change in stability (°C)")        
+       y= "Change in stability (%)")        
 
 
 stability_AT_Q <- perc_change %>%
@@ -557,3 +557,69 @@ plot_grid(SWT_ind_without, SWT_AT_Q_without, nrow = 2, rel_heights = c(1.5,1), l
          filename = "FigureS5.png",
          width= 15, height = 22, units = "cm")
   
+
+## Figure S6 - BWT
+# BWT w/ AT
+BWT_AT <-
+  abs_change %>%
+  filter(season %in% c('summer', 'winter')) |> 
+  # only want to look at Q_change effects
+  filter(Q_change == 1) %>%
+  ggplot(., aes(x=T_change, y=bottomT_mean)) +
+  geom_abline(intercept = 0, slope = 1, linetype = 'dashed') +
+  geom_ribbon(aes(ymax = bottomT_mean + bottomT_sd,
+                  ymin = bottomT_mean - bottomT_sd),colour = NA, alpha = 0.3) +
+  geom_line() +
+  geom_point(size =0.9) +
+  facet_wrap(~season) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) +
+  labs(x = "Air temperature change (+ °C)",
+       y= "Change in BWT (°C)") +
+  scale_y_continuous(limits = c(0,4))
+
+# BWT w/ Q
+BWT_Q <- abs_change %>%
+  # only want to look at Q_change effects
+  filter(T_change == 0,
+         season %in% c('summer', 'winter')) %>%
+  ggplot(., aes(x=Q_change, y=bottomT_mean)) +
+  geom_ribbon(aes(ymax = bottomT_mean + bottomT_sd,
+                  ymin = bottomT_mean - bottomT_sd),colour = NA, alpha =0.3) +
+  geom_line() +
+  geom_point(size =0.9) +
+  facet_wrap(~season) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank()) +
+  scale_x_continuous(breaks = c(0.3, 0.5, 0.7, 0.9, 1.1,1.3, 1.5, 1.7),
+                     labels = c(-70, -50, -30, -10, 10, 30, 50, 70)) +
+  labs(x = "Flow change (%)",
+       y= "Change in BWT (°C)")        
+
+
+facet_labs <- c(summer = 'summer',
+                winter = 'winter')
+
+BWT_AT_Q <- abs_change %>%
+  filter(season %in% c('summer', 'winter')) |> 
+  ggplot(aes(x=as.factor(Q_change), as.factor(T_change))) +
+  geom_tile(aes(fill = bottomT_mean), colour ="black") +
+  geom_text(aes(label = round(bottomT_mean, 1))) +
+  scale_fill_gradient2(limits = c(-1.5,4.5), low = "blue", high ="indianred",
+                       name = "Change in BWT (°C)") +
+  theme_minimal() +
+  facet_wrap(~season, labeller = labeller(season = facet_labs)) +
+  theme(legend.position = "top",
+        legend.margin = margin(-0.1,0,-0.4,0, unit = "cm"),
+        strip.text = element_text(size = 12)) +
+  scale_x_discrete(breaks = as.factor(unique(abs_change$Q_change)),
+                   labels = as.factor(unique(abs_change$Q_change_percentage))) +
+  labs(x= "Flow change (%)",
+       y= "Air temperature change (+ °C)")
+
+BWT_ind <- plot_grid(BWT_AT, BWT_Q, nrow = 2, align = "vh", labels = c("A","B")) 
+
+plot_grid(BWT_ind, BWT_AT_Q, nrow = 2, rel_heights = c(1.5,1), labels = c("", "C")) %>%
+  ggsave(path = out_dir,
+         filename = "FigureS6.png",
+         width= 15, height = 22, units = "cm")
