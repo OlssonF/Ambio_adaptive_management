@@ -397,10 +397,8 @@ write_delim(mit_winter_temps, file.path(out_dir, experiment, "Summaries", "mitig
 
 
 # mitigation potential without ST effect ----------------------------------
-out_dir <- 'GOTM/Output/Experiment_output'
-experiment <- 'change_Q_AT'
 
-abs_change_seasonal_noST <- read_delim(file.path(out_dir, experiment, "Summaries", "abs_change_seasonal.txt") ,
+abs_change_seasonal_noST <- read_delim(file.path(out_dir, experiment_without, "Summaries", "abs_change_seasonal.txt") ,
                                        show_col_types = F) %>%
   mutate(Q_change = as.factor(Q_change),
          T_change = as.factor(T_change),
@@ -484,7 +482,7 @@ for (i in 2:length(unique(abs_temps$T_change))) {
   print(i)
 }
 
-write_delim(mit_summer_temps, file.path(out_dir, experiment, "Summaries", "mitigation_potential_summer.txt"),
+write_delim(mit_summer_temps, file.path(out_dir, experiment_without, "Summaries", "mitigation_potential_summer.txt"),
             delim = "\t")
 
 # Winter Mitigation potential -------------------
@@ -558,12 +556,12 @@ for (i in 2:length(unique(abs_temps$T_change))) {
   print(i)
 }
 
-write_delim(mit_winter_temps, file.path(out_dir, experiment, "Summaries", "mitigation_potential_winter.txt"),
+write_delim(mit_winter_temps, file.path(out_dir, experiment_without, "Summaries", "mitigation_potential_winter.txt"),
             delim = "\t")
 
 
 
-perc_change_seasonal <- read_delim(file.path(out_dir, experiment, "Summaries", "percent_change_seasonal.txt") ,
+perc_change_seasonal <- read_delim(file.path(out_dir, experiment_without, "Summaries", "percent_change_seasonal.txt") ,
                                    show_col_types = F) |> 
   mutate(Q_change = as.factor(Q_change),
          T_change = as.factor(T_change),
@@ -637,5 +635,5 @@ for (i in 1:length(unique(stability$T_change))) {
 
 equiv_effect_stability |> 
   na.omit(effect) |> 
-  write_delim(file.path(out_dir, experiment, "Summaries", "air_temp_equiv_summer_stability.txt"),
+  write_delim(file.path(out_dir, experiment_without, "Summaries", "air_temp_equiv_summer_stability.txt"),
               delim = "\t")

@@ -30,12 +30,12 @@ perc_change <- read_delim(file.path(in_dir, experiment, "Summaries", "perc_chang
 
 
 airT_equiv_summer <- read_delim(file.path(in_dir,experiment, "Summaries", 
-                                          "air_temp_equiv_summerSWT.txt"),
+                                          "air_temp_equiv_summerWT.txt"),
                                 show_col_types = F) %>%
   mutate(Q_reduction = abs((Q_change_val - 1)) * 100)
 
 
-airT_equiv_winter <- read_delim(file.path(in_dir,experiment, "Summaries", "air_temp_equiv_winterSWT.txt"),
+airT_equiv_winter <- read_delim(file.path(in_dir,experiment, "Summaries", "air_temp_equiv_winterWT.txt"),
                                 show_col_types = F) %>%
   mutate(Q_increase = abs((Q_change_val - 1)) * 100)
 
@@ -58,18 +58,18 @@ airT_equiv_summer_stability_without <- read_delim(file.path(in_dir,experiment_wi
 
 # Mitigiation potential 
 MP_summer <- read_delim(file.path(in_dir,experiment, "Summaries", 
-                                  "mitigation_potential_summerSWT.txt"),
+                                  "mitigation_potential_summer.txt"),
                         show_col_types = F) %>%
   mutate(Q_reduction = abs((Q_change_val - 1)) * 100,
          mitigate_inflow = 'No') 
 
 MP_summer_noST <- read_delim(file.path(in_dir,experiment_without, "Summaries", 
-                                       "mitigation_potential_summerSWT.txt"),
+                                       "mitigation_potential_summer.txt"),
                              show_col_types = F) %>%
   mutate(Q_reduction = abs((Q_change_val - 1)) * 100,
          mitigate_inflow = 'Yes')
 MP_winter <- read_delim(file.path(in_dir,experiment, "Summaries", 
-                                  "mitigation_potential_winterSWT.txt"),
+                                  "mitigation_potential_winter.txt"),
                         show_col_types = F) %>%
   mutate(Q_reduction = abs((Q_change_val - 1)) * 100,
          mitigate_inflow = 'No') 
@@ -322,13 +322,22 @@ SWT_stream_diff %>%
 
 # Figure 5 - mitigation potential -------------------------
 
+lab_f5 <- data.frame(label = c('A)','B)','C)','D)','E)','F)'),
+                     scenario = c('summer_swt','summer_swt','summer_st','summer_st','winter_swt','winter_swt'),
+                     mitigate = c('No', 'Yes'),
+                     x = 4,
+                     y = c(200, 200, 200, 200, 600,600)) |> 
+  rename(`mitigate inflow warming?` = mitigate)
+
 summer_swt_mp <-
   bind_rows(MP_summer, MP_summer_noST) |> 
-  ggplot(aes(x=T_change_val, y= 100*(mitigate_SWT/T_change_val),
-             colour = as.factor(Q_reduction), shape = mitigate_inflow)) +
-  geom_jitter(width = 0.1, size = 1.8) +
+  rename(`mitigate inflow warming?` = mitigate_inflow) |> 
+  ggplot() +
+  geom_point(size = 1.8, aes(x=T_change_val, 
+                             y= 100*(mitigate_SWT/T_change_val),
+                             colour = as.factor(Q_reduction))) +
   theme_bw() +
-  theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
+  theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm"), legend.title.align = 1) +
   scale_y_continuous(limit = c(0,210), 
                      breaks = seq(0,200,50)) +
   scale_x_continuous(breaks = seq(0.5,4,0.5)) +
@@ -336,26 +345,24 @@ summer_swt_mp <-
                          option = 'mako',
                          guide = guide_legend(direction = "vertical",
                                               title.position = "top", title.hjust = 0.5))  +
-  scale_shape_manual(name = "Mitigate inflow warming?", 
-                     values = c(16,1),
-                     guide = guide_legend(direction = 'vertical',
-                                          title.position = 'top',
-                                          title.hjust = 0.5)) +
   theme(legend.position = "left", legend.margin = margin(0,0,-4,0), legend.spacing = unit(0.9, units = 'cm'),
         panel.grid.minor = element_blank()) +
   labs(x = "Air temperature change (+ °C)",
        y= "Mitigation potential\n(% of air temperature response)") + 
   guides(colour = guide_legend(order = 2), 
-         shape = guide_legend(order = 1))
+         shape = guide_legend(order = 1)) +
+  geom_text(data = filter(lab_f5, scenario == 'summer_swt'),
+            aes(label = label, x=x, y=y), fontface = 'bold', hjust = 1) +
+  facet_wrap(~`mitigate inflow warming?`, labeller = "label_both", nrow = 2) 
 
 
 summer_schmidt_mp <-
   bind_rows(airT_equiv_summer_stability, airT_equiv_summer_stability_without) |>
   filter(effect == 'mitigate',
          T_change > 0) |> 
-  ggplot(aes(x=T_change, y= 100*(value/T_change), colour = as.factor(Q_reduction), 
-             shape = mitigate_inflow)) +
-  geom_jitter(width = 0.1, size = 1.8) +
+  rename(`mitigate inflow warming?` = mitigate_inflow) |> 
+  ggplot() +
+  geom_point(size = 1.8, aes(x=T_change, y= 100*(value/T_change), colour = as.factor(Q_reduction))) +
   theme_bw() +
   theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
   # scale_y_continuous(limit = c(0,220), 
@@ -369,56 +376,53 @@ summer_schmidt_mp <-
         legend.margin = margin(0,0,-4,0), 
         panel.grid.minor = element_blank()) +
   labs(x = "Air temperature change (+ °C)",
-       y= "Mitigation potential\n(% of air temperature response)") +
-  scale_shape_manual(name = "Mitigate inflow warming?", 
-                     values = c(16,1),
-                     guide = guide_legend(direction = 'horizontal',
-                                          title.position = 'top',
-                                          title.hjust = 0.5)) + 
+       y= "Mitigation potential\n(% of air temperature response)") + 
   guides(colour = guide_legend(order = 2), 
-         shape = guide_legend(order = 1))
+         shape = guide_legend(order = 1)) +
+  geom_text(data = filter(lab_f5, scenario == 'summer_st'),
+            aes(label = label, x=x, y=y), fontface = 'bold', hjust = 1) +
+  facet_wrap(~`mitigate inflow warming?`, labeller = "label_both", nrow = 2) 
 
 
 winter_swt_mp <-
   bind_rows(MP_winter, MP_winter_noST) |> 
-  ggplot(aes(x=T_change_val, y= 100*(mitigate_SWT/T_change_val),
-             colour = as.factor(Q_reduction), shape = mitigate_inflow)) +
-  geom_jitter(width = 0.1, size = 1.8) +
+  rename(`mitigate inflow warming?` = mitigate_inflow) |> 
+  ggplot() +
+  geom_point(aes(x=T_change_val, y= 100*(mitigate_SWT/T_change_val),
+                 colour = as.factor(Q_reduction)),
+             size = 1.8) +
   theme_bw() +
   theme(plot.margin = margin(1,0.5,0.5,0.5, unit = "cm")) +
-  scale_y_continuous(limit = c(0,600),
+  scale_y_continuous(limit = c(0,630),
                      breaks = seq(0,600,100)) +
   scale_x_continuous(breaks = seq(0.5,4,0.5)) +
   scale_colour_viridis_d(name = "Flow reduction (%)", begin = 0.1, end = 0.9,
                          option = 'rocket',
                          guide = guide_legend(direction = "horizontal",
                                               title.position = "left", title.hjust = 0.5, title.theme = element_text(colour = 'white')))  +
-  scale_shape_manual(name = "Mitigate inflow warming?", 
-                     values = c(16,1),
-                     guide = 'none') +
   theme(legend.position = "right", 
         legend.margin = margin(0,0,-4,0), 
         panel.grid.minor = element_blank()) +
   labs(x = "Air temperature change (+ °C)",
        y= "Mitigation potential\n(% of air temperature response)")+ 
-  guides(colour = guide_legend(order = 1))
+  guides(colour = guide_legend(order = 1)) +
+  geom_text(data = filter(lab_f5, scenario == 'winter_swt'),
+            aes(label = label, x=x, y=y), fontface = 'bold', hjust = 1) +
+  facet_wrap(~`mitigate inflow warming?`, labeller = "label_both", nrow = 2) 
 
 
-legends <- ggarrange(NULL, get_legend(summer_swt_mp), get_legend(winter_swt_mp), NULL, 
-                     nrow = 4, align = 'v', heights = c(0.1,1,1,0.5))
+legends <- ggarrange(get_legend(summer_swt_mp), NULL, get_legend(winter_swt_mp),
+                     ncol = 3)
 
-mp_plots <- ggarrange(ggarrange(summer_swt_mp,
-                    summer_schmidt_mp, 
-                    nrow = 1, labels = c('A) Summer SWT',
-                                         'B) Summer stability'),
-                    legend = 'none'),
-          ggarrange(winter_swt_mp, NULL, 
-                    nrow = 1, labels = c('C) Winter SWT',
-                                         ''), 
-                    legend = 'none'), 
-          nrow = 2, align = 'hv')  
+mp_plots <- ggarrange(summer_swt_mp,
+                      summer_schmidt_mp, 
+                      winter_swt_mp,
+                      nrow = 1,
+                      labels = c('Summer SWT',
+                                 'Summer stability',
+                                 'Winter SWT'), common.legend = T, legend = F)  
 
-ggarrange(legends, mp_plots, widths = c(1.2,4))|>  
+ggarrange(legends, mp_plots, heights = c(0.5, 1.5), nrow = 2) |>  
   ggsave(path = out_dir, filename = 'Figure5.png',
          height = 12, width = 21, units = 'cm')
 
@@ -491,7 +495,7 @@ plot_grid(SWT_ind, SWT_AT_Q, nrow = 2, rel_heights = c(1.5,1), labels = c("", "C
          width= 15, height = 22, units = "cm")
 
 
-# Figure s5 ------------
+# Figure s7 ------------
 # SWT w/ AT
 SWT_AT_without <-
   abs_change_without %>%
@@ -554,15 +558,14 @@ SWT_ind_without <- plot_grid(SWT_AT_without, SWT_Q_without, nrow = 2, align = "v
 
 plot_grid(SWT_ind_without, SWT_AT_Q_without, nrow = 2, rel_heights = c(1.5,1), labels = c("", "C")) %>%
   ggsave(path = out_dir,
-         filename = "FigureS5.png",
+         filename = "FigureS7.png",
          width= 15, height = 22, units = "cm")
   
 
-## Figure S6 - BWT
+## Figure S5 - BWT
 # BWT w/ AT
 BWT_AT <-
   abs_change %>%
-  filter(season %in% c('summer', 'winter')) |> 
   # only want to look at Q_change effects
   filter(Q_change == 1) %>%
   ggplot(., aes(x=T_change, y=bottomT_mean)) +
@@ -581,8 +584,7 @@ BWT_AT <-
 # BWT w/ Q
 BWT_Q <- abs_change %>%
   # only want to look at Q_change effects
-  filter(T_change == 0,
-         season %in% c('summer', 'winter')) %>%
+  filter(T_change == 0) %>%
   ggplot(., aes(x=Q_change, y=bottomT_mean)) +
   geom_ribbon(aes(ymax = bottomT_mean + bottomT_sd,
                   ymin = bottomT_mean - bottomT_sd),colour = NA, alpha =0.3) +
@@ -597,18 +599,14 @@ BWT_Q <- abs_change %>%
        y= "Change in BWT (°C)")        
 
 
-facet_labs <- c(summer = 'summer',
-                winter = 'winter')
-
 BWT_AT_Q <- abs_change %>%
-  filter(season %in% c('summer', 'winter')) |> 
   ggplot(aes(x=as.factor(Q_change), as.factor(T_change))) +
   geom_tile(aes(fill = bottomT_mean), colour ="black") +
   geom_text(aes(label = round(bottomT_mean, 1))) +
   scale_fill_gradient2(limits = c(-1.5,4.5), low = "blue", high ="indianred",
                        name = "Change in BWT (°C)") +
   theme_minimal() +
-  facet_wrap(~season, labeller = labeller(season = facet_labs)) +
+  facet_wrap(~season) +
   theme(legend.position = "top",
         legend.margin = margin(-0.1,0,-0.4,0, unit = "cm"),
         strip.text = element_text(size = 12)) +
@@ -617,9 +615,9 @@ BWT_AT_Q <- abs_change %>%
   labs(x= "Flow change (%)",
        y= "Air temperature change (+ °C)")
 
-BWT_ind <- plot_grid(BWT_AT, BWT_Q, nrow = 2, align = "vh", labels = c("A","B")) 
+BWT_ind <- plot_grid(BWT_AT, BWT_Q, nrow = 1, align = "vh", labels = c("A","B")) 
 
-plot_grid(BWT_ind, BWT_AT_Q, nrow = 2, rel_heights = c(1.5,1), labels = c("", "C")) %>%
+plot_grid(BWT_ind, BWT_AT_Q, nrow = 2, rel_heights = c(1,1.5), labels = c("", "C")) %>%
   ggsave(path = out_dir,
-         filename = "FigureS6.png",
+         filename = "FigureS5.png",
          width= 15, height = 22, units = "cm")

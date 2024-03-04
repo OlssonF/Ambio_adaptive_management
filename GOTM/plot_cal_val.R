@@ -1,5 +1,5 @@
 library(tidyverse)
-gotm_config <- "gotm.yaml"
+gotm_config <- "gotm_runs.yaml"
 
 setwd('./GOTM')
 
@@ -124,7 +124,7 @@ cal_mod <- mod_temp |>
   geom_tile() +
   scale_y_reverse(expand = c(0,0), name = 'Depth (m)') +
   scale_x_datetime(expand = c(0,0)) +
-  scale_fill_viridis_c(option = 'turbo', limits = c(0,30), name = 'Temperature')+
+  scale_fill_viridis_c(option = 'turbo', limits = c(0,30), name = 'Temperature  (°C)')+
   theme_bw() +
   labs(title = 'Calibration - Modelled')
 cal_obs <- 
@@ -134,7 +134,7 @@ cal_obs <-
   geom_tile() +
   scale_y_reverse(expand = c(0,0), name = 'Depth (m)') +
   scale_x_datetime(expand = c(0,0)) +
-  scale_fill_viridis_c(option = 'turbo', limits = c(0,30), name = 'Temperature')+
+  scale_fill_viridis_c(option = 'turbo', limits = c(0,30), name = 'Temperature  (°C)')+
   theme_bw() +
   labs(title = 'Calibration - Observed')
 
@@ -143,8 +143,68 @@ hydroGOF::rmse(sim = mod_temp$mod_temp, obs = obs_temp$obs_temp)
 hydroGOF::NSE(sim = mod_temp$mod_temp, obs = obs_temp$obs_temp)
 hydroGOF::mae(sim = mod_temp$mod_temp, obs = obs_temp$obs_temp)
 
+# plot only surface temperature
+SWT_cal <- mod_temp |> 
+  filter(depth == min(depth)) |> 
+  ggplot(aes(x=datetime, y= mod_temp)) +
+  geom_point(data = filter(obs_temp, depth == min(depth)),
+             aes(y = obs_temp),
+             size = 0.9, 
+             colour = 'blue', alpha = 0.7) +
+  geom_line() +
+  theme_bw() +
+  labs(x='Date', y = 'Surface water temperature (°C)') +
+  coord_cartesian(ylim = c(0, 25))
+
+# plot only surface temperature
+BWT_cal <- mod_temp |> 
+  filter(depth == max(depth)) |> 
+  ggplot(aes(x=datetime, y= mod_temp)) +
+  geom_point(data = filter(obs_temp, depth == max(depth)),
+             aes(y = obs_temp),
+             size = 0.9, 
+             colour = 'blue', alpha = 0.7) +
+  geom_line() +
+  theme_bw() +
+  labs(x='Date', y = 'Bottom water temperature (°C)') +
+  coord_cartesian(ylim = c(0, 25))
+
+
+hydroGOF::rmse(sim = filter(mod_temp, depth == 5.94)$mod_temp, 
+               obs = filter(obs_temp, depth == 5.94)$obs_temp)
+hydroGOF::NSE(sim = filter(mod_temp, depth == 5.94)$mod_temp, 
+              obs = filter(obs_temp, depth == 5.94)$obs_temp)
+hydroGOF::mae(sim = filter(mod_temp, depth == 5.94)$mod_temp, 
+              obs = filter(obs_temp, depth == 5.94)$obs_temp)
+
+# calculate the schmidt stability and plot those
+elter_bathy <- load.bathy("bathymetry_analysis.dat")
+
+mod_temp_wide <- mod_temp |> 
+  pivot_wider(names_from = depth,
+              values_from = mod_temp, names_prefix = 'wtr_') 
+
+mod_schmidt <- ts.schmidt.stability(mod_temp_wide, elter_bathy)
+
+obs_temp_wide <- obs_temp |> 
+  pivot_wider(names_from = depth,
+              values_from = obs_temp, names_prefix = 'wtr_') 
+
+obs_schmidt <- ts.schmidt.stability(obs_temp_wide, elter_bathy)
+
+schmidt_cal <- ggplot(mod_schmidt, aes(x=datetime, y= schmidt.stability)) +
+  geom_point(data = obs_schmidt, colour = 'blue', size = 0.9, alpha = 0.7) +
+  geom_line() +
+  labs(x='Date', y = expression(paste("Schmidt stability ", "(", J~m^-2, ")"))) +
+  theme_bw()
+
+hydroGOF::rmse(sim = mod_schmidt$schmidt.stability, obs = obs_schmidt$schmidt.stability)
+hydroGOF::NSE(sim = mod_schmidt$schmidt.stability, obs = obs_schmidt$schmidt.stability)
+hydroGOF::mae(sim = mod_schmidt$schmidt.stability, obs = obs_schmidt$schmidt.stability)
+
 #======================================#
 
+#### Validation period ####
 # Also run during the validation period
 LakeEnsemblR::input_yaml_multiple(file = gotm_config,
                                   key1 = 'time', key2 = 'start', 
@@ -201,7 +261,7 @@ val_mod <-mod_temp |>
   geom_tile() +
   scale_y_reverse(expand = c(0,0), name = 'Depth (m)') +
   scale_x_datetime(expand = c(0,0)) +
-  scale_fill_viridis_c(option = 'turbo', limits = c(0,30), name = 'Temperature')+
+  scale_fill_viridis_c(option = 'turbo', limits = c(0,30), name = 'Temperature  (°C)')+
   theme_bw() +
   labs(title = 'Validation - Modelled')
 
@@ -211,7 +271,7 @@ val_obs <- obs_temp |>
   geom_tile() +
   scale_y_reverse(expand = c(0,0), name = 'Depth (m)') +
   scale_x_datetime(expand = c(0,0)) +
-  scale_fill_viridis_c(option = 'turbo', limits = c(0,30), name = 'Temperature')+
+  scale_fill_viridis_c(option = 'turbo', limits = c(0,30), name = 'Temperature (°C)')+
   theme_bw() +
   labs(title = 'Validation - Observed')
 
@@ -220,8 +280,66 @@ hydroGOF::rmse(sim = mod_temp$mod_temp, obs = obs_temp$obs_temp)
 hydroGOF::NSE(sim = mod_temp$mod_temp, obs = obs_temp$obs_temp)
 hydroGOF::mae(sim = mod_temp$mod_temp, obs = obs_temp$obs_temp)
 
+# plot only surface temperature
+SWT_val <- mod_temp |> 
+  filter(depth == min(depth)) |> 
+  ggplot(aes(x=datetime, y= mod_temp)) +
+  geom_point(data = filter(obs_temp, depth == min(depth)),
+             aes(y = obs_temp),
+             size = 0.9, 
+             colour = 'blue', alpha = 0.7) +
+  geom_line() +
+  theme_bw() +
+  labs(x='Date', y = 'Surface water temperature (°C)') +
+  coord_cartesian(ylim = c(0, 25))
+
+# plot only surface temperature
+BWT_val <- mod_temp |> 
+  filter(depth == max(depth)) |> 
+  ggplot(aes(x=datetime, y= mod_temp)) +
+  geom_point(data = filter(obs_temp, depth == max(depth)),
+             aes(y = obs_temp),
+             size = 0.9, 
+             colour = 'blue', alpha = 0.7) +
+  geom_line() +
+  theme_bw() +
+  labs(x='Date', y = 'Bottom water temperature (°C)') +
+  coord_cartesian(ylim = c(0, 25))
+# calculate the schmidt stability and plot those
+elter_bathy <- load.bathy("bathymetry_analysis.dat")
+
+mod_temp_wide <- mod_temp |> 
+  pivot_wider(names_from = depth,
+              values_from = mod_temp, names_prefix = 'wtr_') 
+
+mod_schmidt <- ts.schmidt.stability(mod_temp_wide, elter_bathy)
+
+obs_temp_wide <- obs_temp |> 
+  pivot_wider(names_from = depth,
+              values_from = obs_temp, names_prefix = 'wtr_') 
+
+obs_schmidt <- ts.schmidt.stability(obs_temp_wide, elter_bathy)
+
+schmidt_val <- ggplot(mod_schmidt, aes(x=datetime, y= schmidt.stability)) +
+  geom_point(data = obs_schmidt, colour = 'blue', size = 0.9, alpha = 0.7) +
+  geom_line() +
+  labs(x='Date', y = expression(paste("Schmidt stability ", "(", J~m^-2, ")"))) +
+  theme_bw()
+
+hydroGOF::rmse(sim = mod_schmidt$schmidt.stability, obs = obs_schmidt$schmidt.stability)
+hydroGOF::NSE(sim = mod_schmidt$schmidt.stability, obs = obs_schmidt$schmidt.stability)
+hydroGOF::mae(sim = mod_schmidt$schmidt.stability, obs = obs_schmidt$schmidt.stability)
+
 #======================================#
 
 cowplot::plot_grid(cal_obs, cal_mod, val_obs, val_mod, nrow = 2) |> 
   ggsave(path = 'Output/Cal_plots/', filename ='Figure_S2.png', 
-         width = 18, height = 18, units = 'cm')
+         width = 18, height = 14.5, units = 'cm')
+
+
+cowplot::plot_grid((SWT_cal + labs(title = 'Calibration')), (SWT_val  + labs(title = 'Validation')), 
+                   BWT_cal, BWT_val,
+                   schmidt_cal, schmidt_val, labels = 'AUTO',
+                   nrow = 3, align = 'hv')  |> 
+  ggsave(path = 'Output/Cal_plots/', filename ='Figure_S3.png', 
+         width = 18, height = 21, units = 'cm')
