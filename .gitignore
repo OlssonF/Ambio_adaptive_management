@@ -6,5 +6,6 @@
 GOTM/Output/
 GOTM/Input/
 *.nc
+*.png
+*.db
 
-*.xml
