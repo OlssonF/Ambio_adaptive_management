@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11193716.svg)](https://doi.org/10.5281/zenodo.11193716)
+
 # Ambio Adaptive management modelling and analysis
 This repository includes the code to run GOTM modelling using a sensitivity approach to investigate how changes in flow will interact with air temeprature warming to impact lake water temperatures. 
 The scripts to run the workflow are in the `Workflows` folder. 
